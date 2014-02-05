@@ -1,0 +1,51 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<fields>
+   <field name="title">
+      <provider name="thetvdb" priority="1" /><provider name="theMovieDB" priority="2" /><provider name="XBMC" priority="3" />
+   </field>
+   <field name="year">
+      <provider name="thetvdb" priority="1" /><provider name="theMovieDB" priority="2" /><provider name="XBMC" priority="3" />
+   </field>
+   <field name="rating">
+      <provider name="thetvdb" priority="1" /><provider name="theMovieDB" priority="2" /><provider name="XBMC" priority="3" />
+   </field>
+   <field name="release">
+      <provider name="thetvdb" priority="1" /><provider name="theMovieDB" priority="2" /><provider name="XBMC" priority="3" />
+   </field>
+   <field name="runtime">
+      <provider name="thetvdb" priority="1" /><provider name="theMovieDB" priority="2" /><provider name="XBMC" priority="3" />
+   </field>
+   <field name="genre">
+      <provider name="thetvdb" priority="1" /><provider name="theMovieDB" priority="2" /><provider name="XBMC" priority="3" />
+   </field>
+   <field name="director">
+      <provider name="thetvdb" priority="1" /><provider name="theMovieDB" priority="2" /><provider name="XBMC" priority="3" />
+   </field>
+   <field name="writer">
+      <provider name="thetvdb" priority="1" /><provider name="theMovieDB" priority="2" /><provider name="XBMC" priority="3" />
+   </field>
+   <field name="actor">
+      <provider name="thetvdb" priority="1" /><provider name="theMovieDB" priority="2" /><provider name="XBMC" priority="3" />
+   </field>
+   <field name="synopsis">
+      <provider name="thetvdb" priority="1" /><provider name="theMovieDB" priority="3" /><provider name="XBMC" priority="2" />
+   </field>
+   <field name="img_poster">
+      <provider name="thetvdb" priority="1" /><provider name="theMovieDB" priority="2" /><provider name="XBMC" priority="3" />
+   </field>
+   <field name="imdbRating">
+      <provider name="thetvdb" priority="1" /><provider name="theMovieDB" priority="2" /><provider name="XBMC" priority="3" />
+   </field>
+   <field name="votes">
+      <provider name="thetvdb" priority="1" /><provider name="theMovieDB" priority="2" /><provider name="XBMC" priority="3" />
+   </field>
+   <field name="imdbID">
+      <provider name="thetvdb" priority="1" /><provider name="theMovieDB" priority="2" /><provider name="XBMC" priority="3" />
+   </field>
+   <field name="type">
+      <provider name="thetvdb" priority="1" /><provider name="theMovieDB" priority="2" /><provider name="XBMC" priority="3" />
+   </field>
+   <field name="response">
+      <provider name="thetvdb" priority="1" /><provider name="theMovieDB" priority="2" /><provider name="XBMC" priority="3" />
+   </field>
+</fields>

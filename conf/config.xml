@@ -1,0 +1,4 @@
+<config>
+  <param name="videoplayer" value="vlc" />
+  <param name="language" value="fr" />
+</config>

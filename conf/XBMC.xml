@@ -1,0 +1,42 @@
+<Saver>
+	<field name="title" markup="title" />
+	<field name="originaltitle" markup="originaltitle" />
+	<field name="rating" markup="rating" />
+	<field name="year" markup="year" />
+	<field name="top250" markup="top250" />
+	<field name="nbvotes" markup="votes" />
+	<field name="synopsis" markup="plot" />
+	<field name="catchphrase" markup="tagline" />
+	<field name="runtime" markup="runtime" />
+	
+	<field name="fanart" markup="fanart" />		<!-- composed of thumb -->
+	<field name="lastplayed" markup="lastplayed" />
+	<field name="id" markup="id" />
+	<field name="type" markup="genre" />
+	<field name="country" markup="country" />
+	<field name="credits" markup="credits" />
+	<field name="director" markup="director" />
+	<field name="studio" markup="studio" />
+	<field name="trailer" markup="trailer" />	<!-- YT video -->
+	<field name="actor" markup="actor" />		<!-- composed of name, role, thumb -->
+	<field name="role" markup="role" />
+	<field name="dateadded" markup="dateadded" />
+	<field name="fileinfo" markup="fileinfo" />
+	<field name="mediadetails" markup="streamdetails" />
+	<field name="videodetails" markup="video" />
+	<field name="codec" markup="codec" />
+	<field name="aspect" markup="aspect" />
+	<field name="width" markup="width" />
+	<field name="height" markup="height" />
+	<field name="audiodetails" markup="audio" />
+	<field name="codec" markup="codec" />
+	<field name="language" markup="language" />
+	<field name="channels" markup="channels" />
+	<field name="subtitle" markup="subtitle" />
+	<field name="showtitle" markup="showtitle" />
+	<field name="displayseason" markup="displayseason" />
+	<field name="displayepisode" markup="displayepisode" />
+	<field name="season" markup="season" />
+	<field name="episode" markup="episode" />
+
+</Saver>

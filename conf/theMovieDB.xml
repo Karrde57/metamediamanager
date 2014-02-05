@@ -1,0 +1,16 @@
+<provider>
+  <field name="title" markup="title" />
+  <field name="orinigaltitle" markup="original_title" />
+  <field name="rating" markup="vote_average" />
+  <field name="release" markup="release_date" />
+  <field name="runtime" markup="runtime" />
+  <field name="genre" markup="genres" />
+  <field name="director" markup="casts" />
+  <field name="writer" markup="casts" />
+  <field name="actor" markup="casts" />
+  <field name="synopsis" markup="overview" />
+  <field name="img_poster" markup="poster_path" />
+  <field name="img_backdrop" markup="backdrop_path" />
+  <field name="votes" markup="imdbVotes" />
+  <field name="imdbID" markup="imdb_id" />
+</provider>
