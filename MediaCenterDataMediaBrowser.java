@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,9 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-// prend as en compte le xml de media brwoser
-
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -21,10 +19,7 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.channels.FileChannel;
-import java.nio.file.Files;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -40,12 +35,19 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+/**
+ * MediaCenterDataMediaBrowser contains all the functions for the media center mediabrowser
+ * @author jmey
+ */
 public class MediaCenterDataMediaBrowser extends MediaCenterData {
 
 	@Override
 	public String getName() {
 		return "MediaBrowser";
 	}
+	
+	protected FieldsConfig _saverconfig = new FieldsConfig(getName());
+
 	
 	@Override
 	public MediaInfo open(String filename) throws ProviderException {
@@ -76,12 +78,12 @@ public class MediaCenterDataMediaBrowser extends MediaCenterData {
 		e.printStackTrace();
 	}
 	//***********END open + parse***********
-	Iterator i = json.keys();
+	Iterator<?> i = json.keys();
 	ArrayList<ActorInfo> actors = new ArrayList<ActorInfo>();
 	HashMap<String, String> structinfo =  _saverconfig.getFieldsAssociation();
 	
 	HashMap<String, String> hashinfo = new HashMap<String,String>();
-	MediaInfo info = new MediaInfo();
+
 	while(i.hasNext())
 	{
 		
@@ -218,9 +220,8 @@ public class MediaCenterDataMediaBrowser extends MediaCenterData {
 	return mediainfo;
 }
 	@Override
-	public void save(Media media) throws ProviderException {
+	public void save(MediaInfo mediainfo, String filename) throws ProviderException {
 		HashMap<String, String> structinfo =  _saverconfig.getFieldsAssociation();
-		MediaInfo mediainfo = media.getInfo();
 		JSONObject jsonobject = new JSONObject();
 		
 		for(Entry<String, String> entry : mediainfo.entrySet())
@@ -330,7 +331,7 @@ public class MediaCenterDataMediaBrowser extends MediaCenterData {
 			   }
 			   else
 			   {
-				   JSONArray jsontab = new JSONArray();
+
 				   for(Entry<String, String> entry2 : structinfo.entrySet()) 
 				   {
 					   String key2 = entry2.getKey();
@@ -377,16 +378,51 @@ public class MediaCenterDataMediaBrowser extends MediaCenterData {
 			e.printStackTrace();
 		}
 			String images[];
-			String f = new File(media.getFilename()).getParent();
+			String f = new File(filename).getParent();
 			images = mediainfo.getImages("img_poster");
-			copy_images(images[0],  f + File.separator + "folder.jpg");
-			images = mediainfo.getImages("img_fanart");
-			for(int i=0;i<images.length;i++)
+			if(images != null && images[0] != null && images[0] != "")
 			{
-				copy_images(images[i],  f + File.separator + "backdrop" + i +".jpg");
-				
+			copy_images(images[0],  f + File.separator + "folder.jpg");
 			}
-		 //System.out.println(jsonobject.toString());
+			images = mediainfo.getImages("img_fanart");
+			if(images != null && images[0] != null && images[0] != "")
+			{
+				for(int i=0;i<images.length;i++)
+				{
+					System.out.println(images[i] + "->>>>>" + f + File.separator + "backdrop" + i +".jpg" );
+					copy_images(images[i],  f + File.separator + "backdrop" + i +".jpg");
+					
+				}
+			}
+			FileOutputStream fop = null;
+			try 
+			{
+				File file = new File("MBMovie.json");
+				fop = new FileOutputStream(file);
+				if (!file.exists()) {
+					file.createNewFile();
+				}
+				byte[] contentInBytes = jsonobject.toString().getBytes();
+				 
+				fop.write(contentInBytes);
+				fop.flush();
+				fop.close();
+			}
+			catch(Exception e)
+			{
+				e.printStackTrace();
+			}
+			finally
+			{
+				try {
+					if (fop != null) {
+						fop.close();
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+			}
+		
 		
 	}
 	
@@ -397,8 +433,7 @@ public class MediaCenterDataMediaBrowser extends MediaCenterData {
 *********************************************************************/
 	
 	@Override
-	public void saveSeries(Series media) {
-		MediaInfo mediainfo = media.getInfo();
+	public void saveSeries(MediaInfo mediainfo, String directory) {
 		
 		HashMap<String, String> hashinfo = _saverconfig.getFieldsAssociation();
 		Element root = new Element("Data");
@@ -441,7 +476,10 @@ public class MediaCenterDataMediaBrowser extends MediaCenterData {
 			allactors += actors[i].getName() + " | ";
 			
 		}
-		allactorselement.setText(allactors.substring(0, allactors.length()-2));
+		if(allactors != "" && allactors.length() >= 2)
+		{
+			allactorselement.setText(allactors.substring(0, allactors.length()-2));
+		}
 		series.addContent(allactorselement);
 		series.addContent(actorselement);
 		
@@ -449,7 +487,6 @@ public class MediaCenterDataMediaBrowser extends MediaCenterData {
 		
 		Document document = new Document(root);
 		 XMLOutputter exit = new XMLOutputter(Format.getPrettyFormat());
-		 	String directory = media.getDirectory();
 			String newFileNameNfo = new File(directory, "Series.xml").getAbsolutePath();
 			System.out.println(newFileNameNfo);
 		 try {
@@ -467,15 +504,14 @@ public class MediaCenterDataMediaBrowser extends MediaCenterData {
 			images = mediainfo.getImages("img_banner");
 			if(images[0] != "")
 			{
-			
-				copy_images(images[0], new File(directory + "\\lol", "banner.jpg").getAbsolutePath());
+				copy_images(images[0], new File(directory, "banner.jpg").getAbsolutePath());
 			}
 				
 			
 			images = mediainfo.getImages("img_poster");
 			if(images[0] != "")
 			{
-				copy_images(images[0], new File(directory + "\\lol", "folder.jpg").getAbsolutePath());
+				copy_images(images[0], new File(directory, "folder.jpg").getAbsolutePath());
 			}
 			images = mediainfo.getImages("img_fanart");
 			
@@ -487,17 +523,19 @@ public class MediaCenterDataMediaBrowser extends MediaCenterData {
 					copy_images(images[i], new File(directory, "backdrop" + j + ".jpg").getAbsolutePath());
 				}
 			}
+			
 	}
 	
 	@Override
 	public MediaInfo openSeries(String filename) throws ProviderException {
-		
+		System.out.println("Entre dans open serie");
+		System.out.println("open serie filename :" +filename);
 		MediaInfo mediainfo = new MediaInfo();
 		org.jdom2.Document document = null;		
 		HashMap<String, String> hashinfo = _saverconfig.getFieldsAssociation();
 		File directory = new File(filename);
 		File xmlfile = new File(directory.getAbsolutePath() + File.separator +  "Series.xml");
-		
+		//System.out.println(xmlfile.getAbsolutePath());
 		if(!xmlfile.exists())
 		{
 			return null;
@@ -517,10 +555,12 @@ public class MediaCenterDataMediaBrowser extends MediaCenterData {
 		
 		Element root = document.getRootElement().getChild("Series"); // root is the 2nd element of the xml file : series
 		List<Element> childlist = root.getChildren();
-		Iterator i = childlist.iterator();
+		Iterator<Element> i = childlist.iterator();
 		ArrayList<ActorInfo> actors = new ArrayList<ActorInfo>();
+		
 		while(i.hasNext())
 		{
+			
 			Element child = (Element) i.next();
 			String key = child.getName();
 			String value = child.getValue();
@@ -528,7 +568,7 @@ public class MediaCenterDataMediaBrowser extends MediaCenterData {
 			if(key.equals("Actors"))
 			{
 				List<Element> childlist2 = child.getChildren();
-				Iterator i2 = childlist2.iterator();
+				Iterator<Element> i2 = childlist2.iterator();
 				int i3=0;
 				String name = null, role = null;
 				while(i2.hasNext())
@@ -560,13 +600,16 @@ public class MediaCenterDataMediaBrowser extends MediaCenterData {
 					
 					String key2 = entry.getKey();
 					String value2 = entry.getValue();
+					System.out.println(key + "->"+ value2);
 					if(key.equals(value2))
 					{
+						System.out.println(key2 + "->"+ value);
 						mediainfo.put(key2,  value);
 					}
 				}
 			}
 		}
+		System.out.println(mediainfo.toString());
 		ActorInfo[] actorsi = new ActorInfo[actors.size()];
 		actors.toArray(actorsi);
 		mediainfo.setActors(actorsi);
@@ -618,14 +661,14 @@ public class MediaCenterDataMediaBrowser extends MediaCenterData {
 			if(images[0] != "")
 			{
 			
-				copy_images(images[0], new File(directory + "\\lol", "banner.jpg").getAbsolutePath());
+				copy_images(images[0], new File(directory, "banner.jpg").getAbsolutePath());
 			}
 				
 			
 			images = mediainfo.getImages("img_poster");
 			if(images[0] != "")
 			{
-				copy_images(images[0], new File(directory + "\\lol", "folder.jpg").getAbsolutePath());
+				copy_images(images[0], new File(directory, "folder.jpg").getAbsolutePath());
 			}
 			images = mediainfo.getImages("img_fanart");
 			
@@ -637,76 +680,24 @@ public class MediaCenterDataMediaBrowser extends MediaCenterData {
 					copy_images(images[i1], new File(directory, "backdrop" + j + ".jpg").getAbsolutePath());
 				}
 			}
-		
-		
+		String genre = mediainfo.get("type");
+		genre = genre.replace('|', ',');
+		if(genre != null && genre != "" && genre.length() > 2)
+		{
+			if(genre.charAt(0) == ',')
+				genre = genre.substring(1);
+			if(genre.charAt(genre.length()-1) == ',')
+				genre = genre.substring(0, genre.length()-1);
+			mediainfo.put("type", genre);
+		}
 		return mediainfo;
 	}
 
 	@Override
-	public void saveEpisode(SeriesEpisode media) {
-		MediaInfo mediainfo = media.getInfo();
-		HashMap<String, String> hashinfo = _saverconfig.getFieldsAssociation();
-		Element root = new Element("Data");
-		Element series = new Element("Episode");
-		for(Entry<String, String> entry : mediainfo.entrySet()) 
-		{
-			String key =  entry.getKey();
-			String value = entry.getValue();
-			
-			for(Entry<String, String> entry2 : hashinfo.entrySet())
-			{
-				String key2 = entry2.getKey();
-				String value2 = entry2.getValue();
-				
-				if(key.equals(key2))
-				{
-					Element newchild = new Element(value2);
-					newchild.setText(value);
-					
-					series.addContent(newchild);
-				}
-			}
-			
-		}
-		root.addContent(series);
-		
-		Document document = new Document(root);
-		 XMLOutputter exit = new XMLOutputter(Format.getPrettyFormat());
-		 	String directory = new File(media.getFilename()).getParentFile().toString();
-		 	String directorymeta = directory + File.separator + "metadata";
-			String newFileNameNfo = new File(directorymeta, new File(media.getFilename()).getName()+".nfo").getAbsolutePath();
-		 try {
-			exit.output(document, new FileOutputStream(newFileNameNfo));
-		} catch (FileNotFoundException e) {
-			e.printStackTrace();
-		} catch (IOException e) {
-			e.printStackTrace();
-		} 
-			//images
-		 String images[];
-			
-			
-			images = mediainfo.getImages("img_banner");
-			if(images[0] != "")
-			{
-			
-				copy_images(images[0], new File(directory, "banner.jpg").getAbsolutePath());
-			}
-				
-			
-			images = mediainfo.getImages("img_poster");
-			if(images[0] != "")
-			{
-				copy_images(images[0], new File(directory, "folder.jpg").getAbsolutePath());
-				System.out.println(directory);
-			}
-			images = mediainfo.getImages("img_fanart");
-		
-	}
-	
-	@Override
 	public MediaInfo openEpisode(String filename)
 	{
+		System.out.println("Entre dans open ep");
+		System.out.println("open ep :" + filename);
 		org.jdom2.Document document = null;	
 		File directory = new File(filename).getParentFile();
 		File metadatafile = new File(directory.getAbsolutePath(), "metadata");
@@ -734,7 +725,7 @@ public class MediaCenterDataMediaBrowser extends MediaCenterData {
 		MediaInfo mediainfo = new MediaInfo();
 		Element root = document.getRootElement().getChild("Episode");
 		List<Element> elements =  root.getChildren();
-		Iterator i = elements.iterator();
+		Iterator<Element> i = elements.iterator();
 		HashMap<String, String> hashinfo = _saverconfig.getFieldsAssociation();
 		while(i.hasNext())
 		{
@@ -754,31 +745,13 @@ public class MediaCenterDataMediaBrowser extends MediaCenterData {
 		}
 		//images
 		String posterName = "folder.jpg";
-		ArrayList<String> imagesNames = new ArrayList<String>();
-		String fanartName = "backdrop1.jpg";
 		String bannerName = "banner.jpg";
-		File f1 = new File(directory, fanartName);
-		int i2=1;
-		while(f1.exists())
-		{
-			fanartName = "backdrop" + i2 + ".jpg";
-			f1 = new File(directory, fanartName);
-			if(f1.exists())
-			{
-				
-				imagesNames.add((f1.getAbsolutePath()));
-				
-				
-			}
-			i2++;
-		}
 		
 		//images
 		String[] imagesNames2 = new String[1];
 		File f2 = new File(directory, posterName);
 		if(f2.exists())
 		{
-			
 			imagesNames2[0] = f2.getAbsolutePath();
 			mediainfo.putImages("img_poster", imagesNames2);
 		}
@@ -786,12 +759,11 @@ public class MediaCenterDataMediaBrowser extends MediaCenterData {
 		File f3 = new File(directory, bannerName);
 		if(f3.exists())
 		{
-			
 			imagesNames3[0] = f3.getAbsolutePath();
 			mediainfo.putImages("img_banner", imagesNames3);
 		}
 		
-		
+		//System.out.println(mediainfo.toString());
 		return mediainfo;
 		
 	}
@@ -850,7 +822,70 @@ public class MediaCenterDataMediaBrowser extends MediaCenterData {
 			
 	
 	}
-
+	@Override
+	public void saveEpisode(MediaInfo mediainfo, String filename) {
+		HashMap<String, String> hashinfo = _saverconfig.getFieldsAssociation();
+		Element root = new Element("Data");
+		Element series = new Element("Episode");
+		for(Entry<String, String> entry : mediainfo.entrySet()) 
+		{
+			String key =  entry.getKey();
+			String value = entry.getValue();
+			
+			for(Entry<String, String> entry2 : hashinfo.entrySet())
+			{
+				String key2 = entry2.getKey();
+				String value2 = entry2.getValue();
+				
+				if(key.equals(key2))
+				{
+					Element newchild = new Element(value2);
+					newchild.setText(value);
+					
+					series.addContent(newchild);
+				}
+			}
+			
+		}
+		root.addContent(series);
+		
+		Document document = new Document(root);
+		 XMLOutputter exit = new XMLOutputter(Format.getPrettyFormat());
+		 	String directory = new File(filename).getParentFile().toString();
+		 	String directorymeta = directory + File.separator + "metadata";
+		 	File directorymetafile = new File(directorymeta);
+		 	if(!directorymetafile.exists())
+		 		directorymetafile.mkdir();
+			File mediafile = new File(filename);
+			String newFileNameNfo = directorymetafile.getAbsolutePath() + File.separator + mediafile.getName().substring(0, mediafile.getName().lastIndexOf('.')) + ".nfo";
+		 try {
+			exit.output(document, new FileOutputStream(newFileNameNfo));
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		} 
+			//images
+		 String images[];
+			
+			
+			images = mediainfo.getImages("img_banner");
+			if(images[0] != "")
+			{
+			
+				copy_images(images[0], new File(directory, "banner.jpg").getAbsolutePath());
+			}
+				
+			
+			images = mediainfo.getImages("img_poster");
+			if(images[0] != "")
+			{
+				copy_images(images[0], new File(directory, "folder.jpg").getAbsolutePath());
+				System.out.println(directory);
+			}
+			images = mediainfo.getImages("img_fanart");
+		
+	}
 
 
 

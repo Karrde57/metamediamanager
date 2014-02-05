@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 
 import java.util.Scanner;
 import java.util.Vector;
@@ -33,6 +33,8 @@ public class MetaMediaManager {
 		ProviderManager.getInstance().loadProviders();
 		SaverManager.getInstance().loadSavers();
 		
+		Scanner s = new Scanner(System.in);
+		
 		int choix = 0, id;
 		System.out.println("*********** MetaMediaManager pre alpha console version ***********\n");
 		
@@ -47,7 +49,7 @@ public class MetaMediaManager {
 			         + "\n"
 			         + "Votre choix : ");
 
-			Scanner s = new Scanner(System.in);
+			
 			choix = s.nextInt();
 			
 			switch(choix)
@@ -80,7 +82,7 @@ public class MetaMediaManager {
 				ProviderRequest request = new ProviderRequest(ProviderRequest.Type.FILM, media.getName(), media.getFilename(), "en");
 
 
-				ProviderResponse i = ProviderManager.getInstance().getInfo(request);
+				ProviderResponse i = ProviderManager.getInstance().getInfo(new MediaInfo(), request);
 				if(i.getType() != ProviderResponse.Type.FOUND)
 				{
 					System.out.println("Pouvez vous donner un nom simplifié pour " + media.getName()+"?");
@@ -99,7 +101,7 @@ public class MetaMediaManager {
 					request = new ProviderRequest(request.getType(), name, request.getFilename(), request.getLanguage());
 
 					System.out.println("vous avez demandé " + request.getName() + " "+name);
-					i = ProviderManager.getInstance().getInfo(request);
+					i = ProviderManager.getInstance().getInfo(new MediaInfo(), request);
 				}
 				System.out.println(i.getResponse());
 				if(i.getType() != ProviderResponse.Type.NOT_FOUND)
@@ -129,9 +131,11 @@ public class MetaMediaManager {
 				break;
 				
 			}
+			
+			
 		}
 		
-		
+		s.close();
 
 	}
 }

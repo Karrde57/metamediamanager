@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,10 +11,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 
 /**
- * 
+ * Allow the providers to communicate if the movie is found, not found, or if there are suggestions
  * @author vincent
  *
  */
@@ -25,23 +25,38 @@ public class ProviderResponse {
 	private String[] _suggested = null;
 	MediaInfo _response = null;
 	
+	/**
+	 * Constructor used when there are suggestions
+	 * @param suggested movies names
+	 */
 	public ProviderResponse(String[] suggested)
 	{
 		_suggested=suggested;
 		_type=Type.SUGGESTED;
 	}
 	
+	/**
+	 * Constructor used when the movie is found
+	 * @param mi information about the movie
+	 */
 	public ProviderResponse(MediaInfo mi)
 	{
 		_type=Type.FOUND;
 		_response=mi;
 	}
 	
+	/**
+	 * Constructor used when the movie is not found
+	 */
 	public ProviderResponse()
 	{
 		_type=Type.NOT_FOUND;
 	}
 	
+	/**
+	 * Returns the suggestions or null if there are no suggestions
+	 * @return suggested names or null
+	 */
 	public String[] getSuggested()
 	{
 		return _suggested;

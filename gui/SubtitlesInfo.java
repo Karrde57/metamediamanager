@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager.gui;
+*/package com.t3.metamediamanager.gui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -31,11 +31,26 @@ import com.t3.metamediamanager.Media;
 import com.t3.metamediamanager.ProviderRequest;
 import com.t3.metamediamanager.Searchable;
 
+
+/**
+ * Panel displayed in the tab "Subtitles" from the InfoPane.
+ * @author vincent
+ *
+ */
 public class SubtitlesInfo extends JPanel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private Media _currentMedia = null;
 	private JList<ListItem> _lstSubtitles;
 	private Searcher _searcher;
 	
+	/**
+	 * Item of the list representing a subtitle
+	 * @author vincent
+	 *
+	 */
 	class ListItem 
 	{
 		private File _file;
@@ -65,7 +80,7 @@ public class SubtitlesInfo extends JPanel {
 		
 		_searcher = s;
 		
-		setLayout(new MigLayout("", "[grow][][grow]", "[][grow][]"));
+		setLayout(new MigLayout("", "[grow][][grow]", "[][grow][][]"));
 		
 		JLabel lblSoustitresDisponibles = new JLabel("Sous-titres disponibles :");
 		add(lblSoustitresDisponibles, "cell 0 0 3 1");
@@ -88,9 +103,17 @@ public class SubtitlesInfo extends JPanel {
 				
 			}
 		});
-		add(btnSearch, "cell 1 2");
+		
+		JLabel lblPensezVrifier = new JLabel("<html>Pensez à vérifier la langue de la recherche (voir les options)</html>");
+		add(lblPensezVrifier, "cell 0 2 3 1");
+		add(btnSearch, "cell 1 3");
 	}
 	
+	
+	/**
+	 * Search the subtitles associated with the entered media
+	 * @param m
+	 */
 	public void setMedia(Media m)
 	{
 		_currentMedia = m;

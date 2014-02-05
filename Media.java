@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 
 import java.io.File;
 import java.sql.PreparedStatement;
@@ -20,15 +20,9 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 import java.util.Vector;
-import com.t3.metamediamanager.Series;
-import com.t3.metamediamanager.SeriesEpisode;
 /**
  * Class representing a film or an episode stored in the database
  */
@@ -54,7 +48,6 @@ public class Media implements Searchable {
 			rs = statement.executeQuery("select * from medias where id=" + id);
 			if(rs.next()) //Media trouvé
 			{
-				String filename = rs.getString("filename");
 				String type = rs.getString("type");		
 				
 				if(type.compareTo("film") == 0)
@@ -84,7 +77,7 @@ public class Media implements Searchable {
 	 * Select all media matching with the request, using the name
 	 * @param name Partial name of the media
 	 * @param filter Filter (only films, only series...)
-	 * @returns vector of the matching medias
+	 * @return vector of the matching medias
 	 */
 	public static Vector<Media> searchByName(String name, MediaFilter filter)
 	{
@@ -225,7 +218,7 @@ public class Media implements Searchable {
 		if(_cacheID != 0 && _info == null) //Si les infos ne sont pas chargées mais qu'elles sont en bdd
 			loadInfo();
 		
-		return _info!=null;
+		return _info.size() > 0;
 	}
 	
 	/**
@@ -237,7 +230,7 @@ public class Media implements Searchable {
 			//Suppression
 			s = DBManager.getInstance().getConnection().createStatement();
 			s.execute("delete from medias where id="+_cacheID);
-			s.execute("delete from fields where media_id="+_cacheID);
+			s.execute("delete from fields where id_media="+_cacheID);
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -252,6 +245,23 @@ public class Media implements Searchable {
 	public Media(String name, String filename) {
 		_name = name;
 		_filename = filename;
+	}
+	
+	/**
+	 * Check if tow medias are equals
+	 */
+	@Override
+	public boolean equals(Object obj)
+	{
+		if(!(obj instanceof Media))
+			return false;
+		
+		Media media = (Media) obj;
+		
+		if(media._cacheID == this._cacheID)
+			return true;
+		else
+			return false;
 	}
 	
 	/**
@@ -286,65 +296,7 @@ public class Media implements Searchable {
 	 */
 	public String generateSimpleName()
     {
-		String strTitleAndYear, strFileName, strYear;
-		
-		strFileName = _name.toLowerCase();
-		
-		strTitleAndYear = strFileName;
-
-		String[] regexps = {"[ _\\,\\.\\(\\)\\[\\]\\-](ac3|dts|custom|dc|french|remastered|divx|divx5|dsr|dsrip|dutch|dvd|dvd5|dvd9|dvdrip|dvdscr|dvdscreener|screener|dvdivx|cam|fragment|fs|hdtv|hdrip|hdtvrip|internal|limited|multisubs|ntsc|ogg|ogm|pal|pdtv|proper|repack|rerip|retail|r3|r5|bd5|se|svcd|swedish|german|read.nfo|nfofix|unrated|extended|ws|telesync|ts|telecine|tc|brrip|bdrip|480p|480i|576p|576i|720p|720i|1080p|1080i|3d|hrhd|hrhdtv|hddvd|bluray|x264|h264|xvid|xvidvd|xxx|www.www|cd[1-9]|\\[.*\\])([ _\\,\\.\\(\\)\\[\\]\\-]|$)", "(\\[.*\\])"};
-
-		String regCleanDate = "(.*[^ _\\,\\.\\(\\)\\[\\]\\-])[ _\\.\\(\\)\\[\\]\\-]+(19[0-9][0-9]|20[0-1][0-9])([ _\\,\\.\\(\\)\\[\\]\\-]|[^0-9]$)";
-		
-		Matcher matcher = Pattern.compile(regCleanDate).matcher(strTitleAndYear);
-		
-		if (matcher.find())
-		    {
-		      strTitleAndYear = matcher.group(1);
-		      strYear = matcher.group(2);
-		    }
-		
-		if(strTitleAndYear.contains("."))
-		  strTitleAndYear = strTitleAndYear.substring(0, strTitleAndYear.lastIndexOf('.')); //remove extension
-
-		  for (int i = 0; i < regexps.length; i++)
-		  {
-			 matcher = Pattern.compile(regexps[i]).matcher(strTitleAndYear);
-
-		    int j=0;
-		    if (matcher.find() && (j=matcher.end()-1) > 0)
-		      strTitleAndYear = strTitleAndYear.substring(0, j);
-		  }
-		  
-
-		  // final cleanup - special characters used instead of spaces:
-		  // all '_' tokens should be replaced by spaces
-		  // if the file contains no spaces, all '.' tokens should be replaced by
-		  // spaces - one possibility of a mistake here could be something like:
-		  // "Dr..StrangeLove" - hopefully no one would have anything like this.
-
-		    boolean initialDots = true;
-		    boolean alreadyContainsSpace = strTitleAndYear.contains(" ");
-
-		    StringBuilder sb = new StringBuilder(strTitleAndYear);
-		    
-		    for (int i = 0; i < (int)sb.length(); i++)
-		    {
-		      char c = sb.charAt(i);
-
-		      if (c != '.')
-		        initialDots = false;
-
-		      if ((c == '_') || ((!alreadyContainsSpace) && !initialDots && (c == '.')))
-		      {
-		        sb.setCharAt(i, ' ');
-		      }
-		    }
-		  
-
-		  strTitleAndYear = sb.toString();
-		  
-		  return strTitleAndYear;
+		return Utility.generateSimpleName(_name);
     }
 	
 	
@@ -390,7 +342,10 @@ public class Media implements Searchable {
 	
 	
 	
-	
+	/**
+	 * this function rename the real file of the media and all files associate to this media (.xml, .json, .jpg, ...)
+	 * @param newname
+	 */
 	public void renameMediaString (String newname)
 	{
 		System.out.println("nom recu par renamemediastring : " + newname);
@@ -403,17 +358,33 @@ public class Media implements Searchable {
 		while(i.hasNext())	//rename first all the file which contains the name of the media
 		{
 			File file = (File)i.next();
+			System.out.println("file.getname" + file.getName());
+			System.out.println("contain(name)" + name);
 			if(file.getName().contains(name))
 			{
 				System.out.println("detection du film");
 				String ext = file.getAbsolutePath().substring(file.getAbsolutePath().lastIndexOf('.'));	//return extensions
+				char[] forbiddenchar = {':', '*', '?' , '"', '<', '>', '|', '/', '\\'};
+				for(int i2=0;i2<forbiddenchar.length;i2++)
+				{
+					for(int i3=0;i3<newname.length();i3++)
+					{
+						if(newname.charAt(i3) == forbiddenchar[i2])
+							newname = newname.replace(newname.charAt(i3), ' ');
+					}
+				}
 				File newfile = new File(directory, newname + ext);
 				System.out.println("renommage du fichier en " + newname+ext);
-				file.renameTo(newfile);
+				System.out.println(file.canExecute() + ""+ file.canRead()+""+file.canWrite());
+				boolean res = file.renameTo(newfile);
+				System.out.println("res :::::::::::" + res);
 				System.out.println("Avant ->>>>>>>>>>>>>>>" + this._filename);
 				this._filename = replace(this._filename, name, newname);
 				System.out.println("Après ->>>>>>>>>>>>>>>" + this._filename);
-				this.save();
+				if(res)
+				{
+					this.save();
+				}
 			}
 			if(file.getName().contains("metadata")) // for mediabrowser
 			{
@@ -463,7 +434,7 @@ public class Media implements Searchable {
 	/**
 	 * Search subtitles located in the movie directory
 	 * TODO : process multiple subtitles files
-	 * @return
+	 * @return subtitles files
 	 */
 	public File[] searchLocalSubtitles()
 	{
@@ -502,6 +473,13 @@ public class Media implements Searchable {
 		}
 			return "";
 	}
+	/**
+	 * use to replace a string to an other string
+	 * @param originalText
+	 * @param subStringToFind
+	 * @param subStringToReplaceWith
+	 * @return
+	 */
     private static String replace(String originalText, String subStringToFind, String subStringToReplaceWith) {
 		int s = 0;
 		int e = 0;

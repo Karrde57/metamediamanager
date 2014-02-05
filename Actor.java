@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,13 +11,16 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.AbstractMap;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Vector;
 
@@ -60,7 +63,7 @@ public class Actor {
 	 * Load and returns the roles of the actor
 	 * key = media id
 	 * string = description of the role
-	 * @return
+	 * @return roles
 	 */
 	public HashMap<Integer, String> getRoles()
 	{
@@ -131,6 +134,27 @@ public class Actor {
 		
 	}
 	
+	
+	public List<Entry<String,String>> getRolesAndMediaNames()
+	{
+		List<Entry<String,String>> res = new ArrayList<Entry<String,String>>();
+		
+		PreparedStatement s = DBManager.getInstance().preparedStatement("SELECT r.description, m.name from role r, medias m WHERE r.id_actor="+_cacheID+" AND r.id_media=m.id");
+		try {
+			ResultSet rs = s.executeQuery();
+			while(rs.next()) //Roles trouvés
+			{
+				Entry<String,String> entry = new AbstractMap.SimpleEntry<String,String>(rs.getString(2), rs.getString(1));
+				res.add(entry);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return res;
+	}
+	
 	/*
 	 * Returns the description of the role of the actor in the movie
 	 * @return String of the description if role found or null
@@ -179,7 +203,7 @@ public class Actor {
 	
 	/**
 	 * Returns the list of the actors playing in the entered media
-	 * @param ID of the media
+	 * @param media ID of the media
 	 * @return Array of the actors
 	 */
 	public static Actor[] getAllByMedia(int media)

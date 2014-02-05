@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 
 import java.io.BufferedOutputStream;
 import java.io.DataOutputStream;
@@ -20,13 +20,9 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.StringReader;
 import java.net.HttpURLConnection;
-import java.net.MalformedURLException;
 import java.net.URL;
-import java.net.URLConnection;
-import java.net.URLEncoder;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
@@ -40,15 +36,20 @@ import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
 
+/**
+ * Provider allowing to search by hash.
+ * TODO : very ugly, we sould use a XML RPC library
+ *
+ */
 public class OpenSubtitlesProvider implements Provider {
 	private static String USER_AGENT = "OS Test User Agent";
 	private static String HOST = "http://api.opensubtitles.org/xml-rpc";
 	private static int TIME_BEFORE_RELOGIN = 600000; //in ms
 	
+	
 	private static String _token ="";
 	private static Date _lastLogin = null;
 	
-	private FieldsConfig _config = new FieldsConfig(getName());
 	
 	private static String generateSimpleRequest(String methodName,String...params)
 	{
@@ -170,8 +171,12 @@ public class OpenSubtitlesProvider implements Provider {
 	}
 	
 	private static String convertStreamToString(InputStream is) {
-	    Scanner s = new Scanner(is).useDelimiter("\\A");
-	    return s.hasNext() ? s.next() : "";
+	    Scanner s = new Scanner(is);
+	    Scanner s2 = s.useDelimiter("\\A");
+	    String res = s.hasNext() ? s.next() : "";
+	    s2.close();
+	    s.close();
+	    return res;
 	}
 	
 	
@@ -182,7 +187,6 @@ public class OpenSubtitlesProvider implements Provider {
 			urlPic = new URL(url);
 			InputStream fileIn = urlPic.openStream();  
 			File srtFile = new File(movieFile.getAbsolutePath().substring(0, movieFile.getAbsolutePath().lastIndexOf('.'))+".srt");
-			String srtPath = srtFile.getAbsolutePath();
 			
 			File zipFile = File.createTempFile("subtitles", ".zip");
 			String zipPath = zipFile.getAbsolutePath();
@@ -204,7 +208,7 @@ public class OpenSubtitlesProvider implements Provider {
 	    		new ZipInputStream(new FileInputStream(zipFile));
 	    	//get the zipped file list entry
 	    	ZipEntry ze = zis.getNextEntry();
-	    	byte[] buffer = new byte[1024];
+
 	    	System.out.println(zipFile.getAbsolutePath());
 	    	while(ze!=null){
 	    		if(ze.getName().endsWith(".srt"))
@@ -226,6 +230,9 @@ public class OpenSubtitlesProvider implements Provider {
 	    		}
 	    		ze = zis.getNextEntry();
 	    	}
+	    	
+	    	
+	    	zis.close();
 		} catch (IOException e) {
 			throw new ProviderException("Erreur lors du download ou de l'extraction de fichier sous titre");
 		}
@@ -295,7 +302,6 @@ public class OpenSubtitlesProvider implements Provider {
 				List<Element> members = struct2.getChildren("member");
 				
 				String finalMovieName ="";
-				String finaleImdbID;
 				
 				String foundLanguage="";
 				String subtitleUrl="";

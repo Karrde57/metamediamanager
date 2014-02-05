@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 
 import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
@@ -37,6 +37,11 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+
+/**
+ * Get the information from Allocine.fr
+ *
+ */
 public class AllocineProvider implements Provider {
 
 	private FieldsConfig _config = new FieldsConfig(getName());
@@ -49,7 +54,7 @@ public class AllocineProvider implements Provider {
 	/**
 	 * Transforms a map of parameter into a part of url "key1=value1&key2=value2"
 	 * @param params
-	 * @return
+	 * @return part of the url
 	 * @throws ProviderException
 	 */
 	private String paramsToString(HashMap<String,String> params) throws ProviderException
@@ -65,11 +70,7 @@ public class AllocineProvider implements Provider {
 					res+="&";
 				i++;
 			}
-			/*}
-		catch(UnsupportedCharsetException | UnsupportedEncodingException e)
-		{
-			throw new ProviderException("Charset non supporté");
-		}*/
+			
 		return res;
 	}
 	
@@ -87,7 +88,7 @@ public class AllocineProvider implements Provider {
 	 * Generates the url of the request and download the json result
 	 * @param method
 	 * @param data
-	 * @return
+	 * @return text content (json string)
 	 * @throws ProviderException
 	 */
 	public String makeRequest(String method, LinkedHashMap<String,String> data) throws ProviderException
@@ -136,7 +137,12 @@ public class AllocineProvider implements Provider {
 		}
         
 	}
-	
+	/**
+	 * Downloads an image and returns a temp file path
+	 * @param path
+	 * @return path of the temp file
+	 * @throws ProviderException
+	 */
 	private String downloadImage (String path) throws ProviderException				
 	{
 		URL urlPic;

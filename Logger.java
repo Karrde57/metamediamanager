@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,13 +11,18 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 
+import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.util.Date;
 
+/**
+ * Allow the developer to write in a log file
+ *
+ */
 public class Logger {
 	//Pour le Singleton
     private static volatile Logger instance = null;
@@ -27,7 +32,7 @@ public class Logger {
     private Logger()
     {
     	try {
-			_fileWriter = new FileWriter("m3.log",true);
+			_fileWriter = new FileWriter(M3Config.getInstance().getUserConfDirectory() + File.separator + "m3.log",true);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

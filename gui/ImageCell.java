@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager.gui;
+*/package com.t3.metamediamanager.gui;
 
 import javax.swing.BorderFactory;
 import javax.swing.JPanel;
@@ -54,6 +54,7 @@ public class ImageCell extends JPanel {
 	
 	private ImageUI btnJaquette;
 	private JLabel label;
+	private String _text;
 	private boolean _isSelected = false;
 	
 	
@@ -71,7 +72,7 @@ public class ImageCell extends JPanel {
 	
 	public ImageCell(File file, String name) {
 		_file = file;
-		
+		_text = name;
 		addMouseListener(new MouseAdapter() {
 			@Override
 			public void mousePressed(MouseEvent e) {
@@ -97,7 +98,7 @@ public class ImageCell extends JPanel {
 		setLayout(new BorderLayout());
 
 		
-		if(_file.exists())
+		if(file != null && _file.exists())
 			btnJaquette = new ImageUI(_file);
 		else
 			btnJaquette = new ImageUI(ClassLoader.getSystemResource("com/t3/metamediamanager/gui/unknown.png"));
@@ -168,5 +169,10 @@ public class ImageCell extends JPanel {
 	public File getImageFile()
 	{
 		return _file;
+	}
+	
+	public String getText()
+	{
+		return _text;
 	}
 }

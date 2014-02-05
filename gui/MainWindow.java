@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,28 +11,22 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager.gui;
+*/package com.t3.metamediamanager.gui;
 
 import java.awt.BorderLayout;
 import java.awt.EventQueue;
 import java.awt.Font;
+import java.awt.Frame;
 import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.ComponentEvent;
-import java.awt.event.ComponentListener;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
-import java.io.File;
-import java.util.EnumSet;
-import java.util.Enumeration;
+import java.util.HashSet;
 
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JFrame;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
@@ -40,7 +34,6 @@ import javax.swing.JSplitPane;
 import javax.swing.JToggleButton;
 import javax.swing.JToolBar;
 import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import javax.swing.event.DocumentEvent;
@@ -49,27 +42,30 @@ import javax.swing.event.DocumentListener;
 import net.miginfocom.swing.MigLayout;
 
 import com.t3.metamediamanager.DBManager;
+import com.t3.metamediamanager.Film;
 import com.t3.metamediamanager.Logger;
 import com.t3.metamediamanager.M3Config;
 import com.t3.metamediamanager.Media;
 import com.t3.metamediamanager.MediaFilter;
 import com.t3.metamediamanager.MediaLibrary;
+import com.t3.metamediamanager.MediaRenamer;
 import com.t3.metamediamanager.ProviderManager;
-import com.t3.metamediamanager.ProviderRequest;
 import com.t3.metamediamanager.SaverManager;
-import com.t3.metamediamanager.Searchable;
 import com.t3.metamediamanager.Series;
 import com.t3.metamediamanager.SeriesEpisode;
-import com.t3.metamediamanager.ThumbCreator;
-import com.t3.metamediamanager.ThumbException;
 
-
+/**
+ * Main class of the GUI application
+ * GUI generated with WindowBuilder (Eclipse). You should use it.
+ * @author vincent
+ *
+ */
 public class MainWindow {
 
 	private JFrame frame;
 	private MediaGrid _mediaGrid;
 	private JIconTextField _txtSearch;
-	private JToggleButton _btnFilterFilm, _btnFilterSeries, _btnFilterComplete, _btnFilterNotComplete;
+	private JToggleButton _btnFilterComplete, _btnFilterNotComplete;
 	private InfosPane _infosPane;
 	private Searcher _searcher = new Searcher();
 	private LibraryTree _libTree = new LibraryTree();
@@ -86,19 +82,17 @@ public class MainWindow {
 		
 		
 		ProviderManager.getInstance().loadConfig("providers.xml");
-		ProviderManager.getInstance().loadProviders();
+		ProviderManager.getInstance().loadProviders();	
 		SaverManager.getInstance().loadSavers();
 		
 		MediaLibrary.getInstance().refreshDB();
 
 		
 		
-		
-
 		EventQueue.invokeLater(new Runnable() {
 			public void run() {
 				try {
-					
+					//Gui Theme
 					try
 					{
 						String osname = System.getProperty ("os.name").toLowerCase();
@@ -119,6 +113,8 @@ public class MainWindow {
 					System.out.println("Unable to load Windows look and feel");
 					}
 					
+					
+					//If it's the first time the user starts the application, we show the "First Run" window
 					if(!M3Config.getInstance().getParam("firstrun").equals("false"))
 					{
 						FirstRunFrame of = new FirstRunFrame();
@@ -134,6 +130,8 @@ public class MainWindow {
 						@Override
 						public void windowClosing(WindowEvent e) {
 					        Logger.getInstance().close();
+					        DBManager.getInstance().close();
+					        System.exit(0);
 					    }
 					});
 				} catch (Exception e) {
@@ -152,15 +150,20 @@ public class MainWindow {
 	
 	private void refreshMediaGrid()
 	{
+		refreshMediaGrid(false);
+	}
+	
+	/**
+	 * Reloads the main grid depending on the filters (only movies, only series ...)
+	 */
+	private void refreshMediaGrid(boolean onlyFilms)
+	{
 		MediaFilter filter;
-		if(_btnFilterFilm.isSelected() && _btnFilterSeries.isSelected())
+
+		if(!onlyFilms)
 			filter = new MediaFilter(MediaFilter.Type.ALL);
-		else if(_btnFilterFilm.isSelected())
-			filter = new MediaFilter(MediaFilter.Type.FILMS);
-		else if(_btnFilterSeries.isSelected())
-			filter = new MediaFilter(MediaFilter.Type.EPISODES);
 		else
-			filter = new MediaFilter(MediaFilter.Type.NONE);
+			filter = new MediaFilter(MediaFilter.Type.FILMS);
 		
 		if(_btnFilterNotComplete.isSelected() && _btnFilterComplete.isSelected())
 		{
@@ -192,6 +195,8 @@ public class MainWindow {
 		
 		frame.setTitle("MetaMediaManager");
 		
+		//GENERATED BY WINDOWBUILDER
+		
 		JSplitPane splitPane = new JSplitPane();
 		splitPane.setResizeWeight(0.65);
 		frame.getContentPane().add(splitPane, BorderLayout.CENTER);
@@ -200,11 +205,13 @@ public class MainWindow {
 		
 		JSplitPane splitPane2 = new JSplitPane();
 		splitPane.setLeftComponent(panel3);
+		splitPane2.setDividerLocation(220);
 		
 		panel3.add(splitPane2, BorderLayout.CENTER);
 		
 		_infosPane = new InfosPane(_searcher);
 		
+		//We the user edit the current media, we reload the main grid (the poster may have been changed)
 		_infosPane.addMediaModifiedListener(new MediaModifiedListener() {
 			@Override
 			public void mediaModified(MediaModifiedEvent e) {
@@ -216,6 +223,7 @@ public class MainWindow {
 		
 		splitPane.setRightComponent(_infosPane);
 		
+		//When a search is ended, we reload the main grid, and reload the information at the right
 		_searcher.addSearchableModifiedListener(new SearchableModifiedListener() {
 			@Override
 			public void onSearchableModified(SearchableModifiedEvent e) {
@@ -232,9 +240,7 @@ public class MainWindow {
 			}	
 		});
 		
-		JPanel panel = new JPanel();
-		splitPane2.setLeftComponent(panel);
-		panel.setLayout(new BorderLayout(0, 0));
+		
 		
 		JPanel panel_2 = new JPanel();
 		panel_2.setBorder(new EmptyBorder(10, 50, 10, 50));
@@ -266,13 +272,7 @@ public class MainWindow {
 		});
 		
 		
-		 _btnFilterFilm = new JToggleButton("Films");
-		_btnFilterFilm.setSelected(true);
-		panel_2.add(_btnFilterFilm, "cell 1 1");
-		
-		_btnFilterSeries = new JToggleButton("Séries");
-		_btnFilterSeries.setSelected(true);
-		panel_2.add(_btnFilterSeries, "cell 3 1");
+
 		
 		ActionListener actionFilters = new ActionListener(){
 			@Override
@@ -284,45 +284,32 @@ public class MainWindow {
 		
 
 		
-		JPanel panel_1 = new JPanel();
-		panel.add(panel_1, BorderLayout.CENTER);
-		panel_1.setLayout(new MigLayout("", "[grow][125px,grow,center][grow]", "[70px][70px][50px,grow]"));
 		
 		_btnFilterComplete = new JToggleButton("Complets");
 		_btnFilterComplete.setSelected(true);
-		panel_1.add(_btnFilterComplete, "cell 1 0,grow");
 		
 		_btnFilterNotComplete = new JToggleButton("Incomplets");
 		_btnFilterNotComplete.setSelected(true);
-		panel_1.add(_btnFilterNotComplete, "cell 1 1,grow");
+		
+		panel_2.add(_btnFilterComplete, "cell 1 1");
+		
+		panel_2.add(_btnFilterNotComplete, "cell 3 1");
 		
 		JScrollPane scrollPane = new JScrollPane();
-		panel_1.add(scrollPane, "cell 0 2 3 1,grow");
 		
 		scrollPane.setViewportView(_libTree);
-		_libTree.addMediaChangedListener(new MediaChangedListener() {
+		
+		splitPane2.setLeftComponent(scrollPane);
+		
 
-			@Override
-			public void mediaChanged(MediaChangedEvent e) {
-				_infosPane.setCurrentMedia(e.getMedia());
-			}
-			
-		});
+
 		
 		_mediaGrid = new MediaGrid();
 		splitPane2.setRightComponent(_mediaGrid);
 		
-		_btnFilterFilm.addActionListener(actionFilters);
-		_btnFilterSeries.addActionListener(actionFilters);
 		_btnFilterComplete.addActionListener(actionFilters);
 		_btnFilterNotComplete.addActionListener(actionFilters);
 		
-		_mediaGrid.addMediaChangedListener(new MediaChangedListener(){
-			@Override
-			public void mediaChanged(MediaChangedEvent e) {
-				_infosPane.setCurrentMedia(e.getMedia());
-			}
-		});
 		
 		refreshMediaGrid();
 
@@ -335,6 +322,16 @@ public class MainWindow {
 		refreshButton.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				//We check if there is at least 1 enabled provider
+				if(M3Config.getInstance().getEnabledProviders().size() == 0)
+				{
+					JOptionPane.showMessageDialog(frame,
+						    "Vous n'avez aucun fournisseur activé (voir les options)",
+						    "Recherche",
+						    JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				
 				_searcher.searchList(_mediaGrid.getAllMedias());
 			}
 		});
@@ -342,17 +339,53 @@ public class MainWindow {
 		saveButton.setIcon(new ImageIcon(MainWindow.class.getResource("/com/t3/metamediamanager/gui/icons/Save.png")));
 		saveButton.setToolTipText("Effectuer une sauvegarde vers les media centers");
 		toolBar.add(saveButton);
+		
+		
+		//When the user wants to export the data to media centers
 		saveButton.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
+				//We check if there is at least 1 enabled saver
+				if(M3Config.getInstance().getEnabledSavers().size() == 0)
+				{
+					JOptionPane.showMessageDialog(frame,
+						    "Vous n'avez aucun enregistreur activé (voir les options)",
+						    "Export",
+						    JOptionPane.ERROR_MESSAGE);
+					return;
+				}
+				if(M3Config.getInstance().getEnabledSavers().contains("MediaBrowser"))
+				{
+					int retour = JOptionPane.showConfirmDialog(new Frame(), "<html><b>Attention, pour le media center mediabrowser : </b><br /> - les films doivent être dans des dossiers différents (vous pouvez utiliser le bouton juste à côté pour cela) <br /> - Les épisodes des séries doivent être rangés par saison (Cette fonction n'est malheureusement pas encore disponible) <br /><br /> sinon l'export ne fonctionnera pas correctement. </html>");
+					if (retour != JOptionPane.OK_OPTION)
+						return;
+						
+				}
+				
 				Media[] medias = _mediaGrid.getAllMedias();
+				HashSet<Integer> series = new HashSet<Integer>();
 				for(Media m  : medias)
 				{
 					if(m.hasInfos())
 					{
 						SaverManager.getInstance().save(m);
+						
+						if(m instanceof SeriesEpisode)
+							series.add(((SeriesEpisode) m).getSeriesId());
 					}
 				}
+				
+				for(Integer seriesId : series)
+				{
+					SaverManager.getInstance().save(Series.loadById(seriesId));
+				}
+				
+				
+				String txt = "L'export a été effectué vers les media centers suivants : ";
+				for(String str : M3Config.getInstance().getEnabledSavers())
+					txt+=str +" ";
+				JOptionPane.showMessageDialog(frame,txt);
+				
 			}
 		});
 		
@@ -392,14 +425,16 @@ public class MainWindow {
 				w.setVisible(true);
 				
 				refreshMediaGrid();
+				MainWindow.this._libTree.reloadLibrary();
 				
 			}
 		});
 		
-		JButton renamerButton = new JButton("Renommer");
-		//optionButton.setIcon(new ImageIcon(MainWindow.class.getResource("/com/t3/metamediamanager/gui/icons/Gears.png")));
-		optionButton.setToolTipText("Renommer les médias");
+		JButton renamerButton = new JButton();
+		renamerButton.setIcon(new ImageIcon(MainWindow.class.getResource("/com/t3/metamediamanager/gui/icons/Pen.png")));
+		renamerButton.setToolTipText("Renommer les médias");
 		toolBar.add(renamerButton);
+		//Opens the "renamer" window
 		renamerButton.addActionListener(new ActionListener(){
 			@Override
 			public void actionPerformed(ActionEvent arg0) {
@@ -417,7 +452,81 @@ public class MainWindow {
 		        });
 			}
 		});
+		
+		JButton eachfilmfolderButton = new JButton();
+		eachfilmfolderButton.setIcon(new ImageIcon(MainWindow.class.getResource("/com/t3/metamediamanager/gui/icons/Folder Open.png")));
+		//optionButton.setIcon(new ImageIcon(MainWindow.class.getResource("/com/t3/metamediamanager/gui/icons/Gears.png")));
+		eachfilmfolderButton.setToolTipText("1 film = 1 dossier [BETA]");
+		toolBar.add(eachfilmfolderButton);
+		eachfilmfolderButton.addActionListener(new ActionListener(){
+			@Override
+			public void actionPerformed(ActionEvent arg0) {
+				int retour = JOptionPane.showConfirmDialog(new Frame(), "[BETA] Etes vous sûr de vouloir mettre chacun de vos films dans un dossier séparé ?");
+				if (retour == JOptionPane.OK_OPTION)
+					MediaRenamer.folderEachFilm();
+		       
+			}
+		});
+		
+		
+		
+		
 		frame.getContentPane().add(toolBar, BorderLayout.NORTH);
+		
+		//When something is selected either in the treeview or the grid
+		LibTreeSelectionListener selectListener = new LibTreeSelectionListener(){
+
+			@Override
+			public void selected(LibTreeSelectionEvent e) {
+				System.out.println(e.getType());
+				
+				if(e.getType() == LibTreeSelectionEvent.Type.EVERYTHING)
+				{
+					_txtSearch.setText("");
+					refreshMediaGrid();
+				}
+				
+				if(e.getType() == LibTreeSelectionEvent.Type.ALL_FILMS)
+				{
+					MainWindow.this._libTree.selectAllFilms();
+					MainWindow.this.refreshMediaGrid(true);
+				} else if(e.getType() == LibTreeSelectionEvent.Type.MEDIA)
+				{
+					
+					if(e.media instanceof Film)
+					{
+						if(MainWindow.this._mediaGrid.getSelectedMedia() != null && !MainWindow.this._mediaGrid.getSelectedMedia().equals(e.media))
+							MainWindow.this.refreshMediaGrid(true);
+					} else {
+						
+						//If series episode, we show the grid of the season
+						SeriesEpisode episode = (SeriesEpisode) e.media;
+						MainWindow.this._mediaGrid.showSeason(episode.getSeries(), episode.getSeasonNumber());
+					}
+					MainWindow.this._mediaGrid.setSelectedMedia(e.media);
+					MainWindow.this._infosPane.setCurrentMedia(e.media);
+					MainWindow.this._libTree.selectMedia(e.media);
+				} else if(e.getType() == LibTreeSelectionEvent.Type.SERIES)
+				{
+					MainWindow.this._libTree.selectSeries(e.series);
+					MainWindow.this._mediaGrid.showSeries(e.series);
+					MainWindow.this._infosPane.setSeries(e.series);
+				} else if(e.getType() == LibTreeSelectionEvent.Type.ALL_SERIES)
+				{
+					MainWindow.this._mediaGrid.showAllSeries();
+					MainWindow.this._libTree.selectAllSeries();
+				} else if(e.getType() == LibTreeSelectionEvent.Type.SEASON)
+				{
+					MainWindow.this._libTree.selectSeason(e.series, e.season);
+					MainWindow.this._mediaGrid.showSeason(e.series, e.season);
+				}
+			}
+			
+		};
+		
+		//When the user clicks on a media in the tree, we show the information
+		_libTree.addLibTreeSelectionListener(selectListener);
+		_mediaGrid.addLibTreeSelectionListener(selectListener);
 				
 	}
 

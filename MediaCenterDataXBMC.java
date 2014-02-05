@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,12 +11,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-/**
- * class which has all methods for the data center XBMC (saver and provider)
- */
-
+*/
 package com.t3.metamediamanager;
 import java.util.List;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -28,13 +26,21 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map.Entry;
+
 import org.jdom2.input.*;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 import org.jdom2.*;
+/**
+ * class which has all methods for the data center XBMC (saver and provider)
+ * @author jmey
+ */
 public class MediaCenterDataXBMC extends MediaCenterData {
 
 
+	protected FieldsConfig _saverconfig = new FieldsConfig(getName());
+
+	
 	@Override
 	public MediaInfo open(String filename) throws ProviderException {  
 		org.jdom2.Document document = null;												
@@ -207,6 +213,7 @@ public class MediaCenterDataXBMC extends MediaCenterData {
 		String fanartName = movieName + "-fanart.jpg";
 		String posterName = movieName +"-poster.jpg";
 		String thumbName = movieName + "-thumb.jpg";
+		
 		String[] imagesNames = new String[1];
 		File f1 = new File(movieFile.getParent(), fanartName);
 		if(f1.exists())
@@ -220,13 +227,13 @@ public class MediaCenterDataXBMC extends MediaCenterData {
 		if(f2.exists())
 		{
 			imagesNames[0] = f2.getAbsolutePath();
-			mediainfo.putImages("img_poster", imagesNames);
+			mediainfo.putImages("img_realposter", imagesNames);
 		}
 		File f3 = new File(movieFile.getParent(), thumbName);
 		if(f3.exists())
 		{
 			imagesNames[0] = f3.getAbsolutePath();
-			mediainfo.putImages("img_episode", imagesNames);
+			mediainfo.putImages("img_poster", imagesNames);
 		}
 		
 		return mediainfo;
@@ -237,9 +244,7 @@ public class MediaCenterDataXBMC extends MediaCenterData {
 ********************/
 	
 	@Override
-	public void save(Media media) {
-		String filename = media.getFilename();
-		MediaInfo info = media.getInfo();
+	public void save(MediaInfo info, String filename) {
 		Element root = new Element("movie");
 		Document document = new Document(root);
 		Element child, child2, child3;
@@ -289,7 +294,7 @@ public class MediaCenterDataXBMC extends MediaCenterData {
 		}
 			
 		 XMLOutputter exit = new XMLOutputter(Format.getPrettyFormat());
-			String newFileName = media.getFilename().substring(0, filename.lastIndexOf('.'));
+			String newFileName = filename.substring(0, filename.lastIndexOf('.'));
 			String newFileNameNfo = newFileName + ".nfo";
 		 try {
 			exit.output(document, new FileOutputStream(newFileNameNfo));
@@ -301,20 +306,26 @@ public class MediaCenterDataXBMC extends MediaCenterData {
 		String images[];
 		
 		images = info.getImages("img_poster");
-		copy_images(images, newFileName +"-poster.jpg");
-	
+		if(images[0] != null && images[0] != "")
+			copy_images(images[0], newFileName +"-poster.jpg");
 		images = info.getImages("img_fanart");
-		copy_images(images, newFileName+"-fanart.jpg");
-		File dir = new File(new File(media.getFilename()).getParentFile(), ".actors");
+		System.out.println("->>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + Arrays.toString(images));
+		if(images[0] != null && images[0] != "")
+			copy_images(images[0], newFileName+"-fanart.jpg");
+		File dir = new File(new File(filename).getParentFile(), ".actors");
 		dir.mkdir();
 		String newActorName;
-		for(Entry<String, String> entry : actorsimg.entrySet()) 
+		if(actorsimg != null && !actorsimg.isEmpty())
 		{
-			
-			images[0] = entry.getValue();
-			newActorName = entry.getKey().replace(' ', '_');
-			copy_images(images, new File(dir, newActorName + ".jpg").toString());
-			System.out.println(Arrays.toString(images) +"++++++++++++++++++++++++"+new File(dir, newActorName + ".jpg").toString());
+			for(Entry<String, String> entry : actorsimg.entrySet()) 
+			{
+				
+				String newimage = entry.getValue();
+				newActorName = entry.getKey().replace(' ', '_');
+				if(newimage != null && newimage != "" && new File(newimage).exists())
+					copy_images(newimage, new File(dir, newActorName + ".jpg").toString());
+				System.out.println(newimage +"++++++++++++++++++++++++"+new File(dir, newActorName + ".jpg").toString());
+			}
 		}
 		
 	}
@@ -324,16 +335,15 @@ public class MediaCenterDataXBMC extends MediaCenterData {
  * @param images
  * @param newFileName
  */
-	public void copy_images(String[] images, String newFileName)
+	public void copy_images(String images, String newFileName)
 	{
-		for(int i=0;i<images.length;i++)
-		{
+
 			FileChannel in = null; // canal d'entrée
 			FileChannel out = null; // canal de sortie
 			try 
 			{
 				  // Init
-				  in = new FileInputStream(images[i]).getChannel();
+				  in = new FileInputStream(images).getChannel();
 				  out = new FileOutputStream(newFileName).getChannel();
 				 
 				  // Copy in->out
@@ -341,11 +351,11 @@ public class MediaCenterDataXBMC extends MediaCenterData {
 			}
 			catch (FileNotFoundException e)
 			{
-				//fichier non trouvé
+				e.printStackTrace();
 			}
 			catch (Exception e)
 			{
-				  
+				e.printStackTrace(); 
 			}
 			finally
 			{ 
@@ -356,7 +366,7 @@ public class MediaCenterDataXBMC extends MediaCenterData {
 					} 
 				  	catch (Exception e)
 					{
-						
+				  		e.printStackTrace();
 					}
 				  }
 				  if(out != null)
@@ -367,12 +377,13 @@ public class MediaCenterDataXBMC extends MediaCenterData {
 					} 
 				  	catch (Exception e) 
 				  	{
-				  		
+				  		e.printStackTrace();
 				  	}
-				  }
+				  }		
 			}
 			
-		}
+			
+	
 	}
 	
 /****************************************
@@ -522,7 +533,7 @@ public class MediaCenterDataXBMC extends MediaCenterData {
 		if(f1.exists())
 		{
 			imagesNames[0] = f1.getAbsolutePath();
-			mediainfo.putImages("img_posterAllSeason", imagesNames);
+			mediainfo.putImages("img_poster", imagesNames);
 		}
 		
 		File f2 = new File(filename, "season-all-poster.jpg");
@@ -544,9 +555,7 @@ public class MediaCenterDataXBMC extends MediaCenterData {
 	/********************
 	*********SAVE********
 	********EPISODE*****/
-	public void saveEpisode(SeriesEpisode media) {
-		String filename = media.getFilename();
-		MediaInfo info = media.getInfo();
+	public void saveEpisode(MediaInfo info, String filename) {
 		Element root = new Element("episodedetails");
 		Document document = new Document(root);
 		Element child;
@@ -572,7 +581,7 @@ public class MediaCenterDataXBMC extends MediaCenterData {
 			}
 		}
 		 XMLOutputter exit = new XMLOutputter(Format.getPrettyFormat());
-			String newFileName = media.getFilename().substring(0, filename.lastIndexOf('.'));
+			String newFileName = filename.substring(0, filename.lastIndexOf('.'));
 			String newFileNameNfo = newFileName + ".nfo";
 		 try {
 			exit.output(document, new FileOutputStream(newFileNameNfo));
@@ -584,15 +593,16 @@ public class MediaCenterDataXBMC extends MediaCenterData {
 		String images[];
 		
 		
-		images = info.getImages("img_episode");
-		copy_images(images, newFileName+"-thumb.jpg");
+		images = info.getImages("img_poster");
+		System.out.println(Arrays.toString(images));
+		if(images[0] != null && images[0] != "")
+			copy_images(images[0], newFileName+"-thumb.jpg");
 	}
 	
 	/********************
 	*********SAVE********
 	********SERIES******/
-	public void saveSeries(Series media) {
-		MediaInfo info = media.getInfo();
+	public void saveSeries(MediaInfo info, String directory) {
 		Element root = new Element("tvshow");
 		Document document = new Document(root);
 		Element child;
@@ -618,7 +628,6 @@ public class MediaCenterDataXBMC extends MediaCenterData {
 			}
 		}
 		 XMLOutputter exit = new XMLOutputter(Format.getPrettyFormat());
-		 	String directory = media.getDirectory();
 			String newFileNameNfo = new File(directory, "tvshow.nfo").getAbsolutePath();
 		 try {
 			exit.output(document, new FileOutputStream(newFileNameNfo));
@@ -630,16 +639,19 @@ public class MediaCenterDataXBMC extends MediaCenterData {
 		String images[];
 		
 		
-		images = info.getImages("img_posterAllSeason");
-		copy_images(images, new File(directory, "posterAllSeason.jpg").getAbsolutePath());
+		images = info.getImages("img_poster");
+		if(images[0] != null && images[0] != "")
+			copy_images(images[0], new File(directory, "posterAllSeason.jpg").getAbsolutePath());
 
 			
 		
 		images = info.getImages("img_fanart");
-		copy_images(images, new File(directory, "fanart.jpg").getAbsolutePath());
+		if(images[0] != null && images[0] != "")
+			copy_images(images[0], new File(directory, "fanart.jpg").getAbsolutePath());
 		
-		images = info.getImages("banner_series");
-		copy_images(images, new File(directory, "banner.jpg").getAbsolutePath());
+		images = info.getImages("img_banner");
+		if(images[0] != null && images[0] != "")
+			copy_images(images[0], new File(directory, "banner.jpg").getAbsolutePath());
 	}
 
 	@Override

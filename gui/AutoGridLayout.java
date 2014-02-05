@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager.gui;
+*/package com.t3.metamediamanager.gui;
 
 import java.awt.Component;
 import java.awt.Container;
@@ -28,7 +28,12 @@ import java.awt.Insets;
   */
 
  public class AutoGridLayout extends FlowLayout {
-       public AutoGridLayout() {
+       /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	public AutoGridLayout() {
               super();
            }
 

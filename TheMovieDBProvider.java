@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 import java.net.URL;
 import java.net.URLConnection;
 import java.net.URLEncoder;
@@ -35,17 +35,14 @@ import org.json.JSONObject;
  */
 public class TheMovieDBProvider implements Provider {
 
-	private String url;
 	private String charset;
 	private String query;
-	private JSONObject json;
 	private String apiKey;
 	
 	private FieldsConfig _config = new FieldsConfig(getName());
 	
 	//http://api.themoviedb.org/3/movie/550?api_key=ebb392e0588bc0b5ab9d9a6100711a8c&append_to_response=casts&language=fr
 	public TheMovieDBProvider() {
-		url ="http://api.themoviedb.org/";
 		apiKey = "ebb392e0588bc0b5ab9d9a6100711a8c";
 		charset = "UTF-8";
 	}
@@ -81,7 +78,7 @@ public class TheMovieDBProvider implements Provider {
 			connection.setRequestProperty("Accept-Charset", charset);
 			InputStream response = connection.getInputStream();
 			String rep = convertStreamToString(response);
-			return json = convertStringToJSON(rep);
+			return convertStringToJSON(rep);
 		}
 		catch (IOException e) {
 			throw new ProviderException("Erreur d'accès à l'API !" +e.getMessage());
@@ -115,8 +112,12 @@ public class TheMovieDBProvider implements Provider {
 	 * 		A String Object.
 	 */
 	private static String convertStreamToString(InputStream is) {
-	    Scanner s = new Scanner(is).useDelimiter("\\A");
-	    return s.hasNext() ? s.next() : "";
+	    Scanner s = new Scanner(is);
+	    Scanner s2 = s.useDelimiter("\\A");
+	    String res = s.hasNext() ? s.next() : "";
+	    s2.close();
+	    s.close();
+	    return res;
 	}
 	
 	/**
@@ -143,8 +144,7 @@ public class TheMovieDBProvider implements Provider {
 						for(Entry<String, String> entry : mapInfos.entrySet()) {
 								 String value = entry.getValue();
 								 String cle = entry.getKey();
-								 String imagePath;
-								 String[] tab = new String[1];
+
 								 if (json.has(value))
 								 {
 									 if (cle.equals("genre") && !json.isNull(value))	//gère les images

@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,9 +11,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 
 import java.util.EnumSet;
+
 
 /**
  * Represents the request sent to the provider
@@ -35,7 +36,7 @@ public class ProviderRequest {
 	private String _imdbID = "";
 	
 	/**
-	 * Request with film parameters
+	 * Request with film or series parameters
 	 * @param type request type
 	 * @param name media name
 	 * @param filename media filename
@@ -67,18 +68,7 @@ public class ProviderRequest {
 		_seriesName = seriesName;
 	}
 	
-	/**
-	 * Request with series parameters
-	 * @param type request type
-	 * @param seriesName name of the series
-	 * @param l language
-	 */
-	public ProviderRequest(Type type, String seriesName, String l)
-	{
-		_type=type;
-		_seriesName = seriesName;
-		_language = l;
-	}
+
 
 	public String getName() {
 		return _name;
@@ -106,11 +96,11 @@ public class ProviderRequest {
 	{
 		return _hash;
 	}
-	public EnumSet getAdditions()
+	public EnumSet<Additions> getAdditions()
 	{
 		return _additions;
 	}
-	public void setAdditions(EnumSet s)
+	public void setAdditions(EnumSet<Additions> s)
 	{
 		_additions = s;
 	}

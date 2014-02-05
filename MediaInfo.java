@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 
 import java.io.File;
 import java.io.IOException;
@@ -26,11 +26,21 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map.Entry;
 
+/**
+ * MediaInfo contains all information about a media : synopsis, director, posters etc.
+ * It doesn't contain the filename or any information about the file itself.
+ * Images are stored in /home/user/.m3 (or c:/users/user/MetaMediaManager).
+ * @author vincent
+ *
+ */
 public class MediaInfo extends HashMap<String,String> {
 	
 	private boolean _imagesModified=false;
 	private boolean _actorsModified=false;
 	private ActorInfo[] _actors;
+	
+	private boolean _isNew = true;
+
 	private HashSet<String> _modifiedFields = new HashSet<String>();
 	private HashSet<String> _newFields = new HashSet<String>();
 	private static final long serialVersionUID = 1L;
@@ -45,17 +55,13 @@ public class MediaInfo extends HashMap<String,String> {
 	public static MediaInfo load(String table, int id)
 	{
 		Statement statement = DBManager.getInstance().getStatement();
-		MediaInfo info = null;
+		MediaInfo info = new MediaInfo();
 		try {
 			ResultSet rsinfo;
 			rsinfo = statement.executeQuery("select * from fields where id_"+table+"=" + id);
 			
 		    while(rsinfo.next())
 		    {
-		    	if(info == null)
-		    	{
-		    		info = new MediaInfo();
-		    	}
 		       info.put(rsinfo.getString("name"), rsinfo.getString("value"));
 		       
 		       if(table.equals("media"))
@@ -71,6 +77,7 @@ public class MediaInfo extends HashMap<String,String> {
 			    }
 		    }
 		    
+		    info._isNew = false;
 		    
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -89,14 +96,12 @@ public class MediaInfo extends HashMap<String,String> {
 		long time = System.nanoTime();
 		System.out.println("1 id : " + id + " temps : " + (System.nanoTime()-time));
 		
-		Statement s;
 		try {
 			//En cas de sauvegarde d'images
 			if(_imagesModified)
 			{
 				for(Entry<String, String> entry : this.entrySet()) {
 				    String cle = entry.getKey();
-				    String valeur = entry.getValue();
 				    
 				    if(cle.startsWith("img_"))
 				    {
@@ -200,6 +205,16 @@ public class MediaInfo extends HashMap<String,String> {
 			System.out.println("3 id : " + id + " temps : " + (System.nanoTime()-time));
 				
 			
+			//Si c'est un nouveau media info, on supprime ce qui pourrait déjà exister en bdd
+			if(_isNew)
+			{
+			    PreparedStatement ps = DBManager.getInstance().getConnection().prepareStatement("delete from fields where id_"+table+"=?");
+			    ps.setInt(1, id);
+			    ps.execute();
+			}
+
+			
+			
 			//Insertion de nouvelles données
 			for(String cle : _newFields) {
 			    String valeur = get(cle);	    
@@ -229,6 +244,9 @@ public class MediaInfo extends HashMap<String,String> {
 			
 			//DEBUG
 			System.out.println("4 id : " + id + " temps : " + (System.nanoTime()-time));
+			
+			
+			_isNew = false;
 			
 			
 		} catch (SQLException e) {
@@ -283,7 +301,7 @@ public class MediaInfo extends HashMap<String,String> {
 	}
 	
 	/**
-	 * return a list of images sored in the field
+	 * return a list of images stored in the field
 	 * @param name
 	 * @return array of images
 	 */
@@ -295,7 +313,7 @@ public class MediaInfo extends HashMap<String,String> {
 	}
 	
 	/**
-	 * add images to mediaInfo
+	 * add images to mediaInfo. The file must be local and will be copied in the cache.
 	 * @param name
 	 * @param imagesNames imagesNames must be a local file
 	 */

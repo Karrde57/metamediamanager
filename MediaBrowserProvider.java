@@ -14,15 +14,14 @@ limitations under the License.
 */package com.t3.metamediamanager;
 
 /**
- * rProviderXBMC is used to do the link between MediaCenterDataXBMC and other classes  when xbmc is a provider
+ * MediaBrowserProvider is used to do the link between MediaCenterDataMediaBrowser and other classes  when mediabrowser is a provider
  * @author jmey
- *
  */
-public class ProviderXBMC implements Provider {
+public class MediaBrowserProvider implements Provider {
 
 	@Override
 	public String getName() {
-		return "XBMC";
+		return "MediaBrowser";
 	}
 	
 	@Override
@@ -34,23 +33,22 @@ public class ProviderXBMC implements Provider {
 	}
 
 	public MediaInfo getInfo(ProviderRequest request) throws ProviderException {
-		MediaCenterDataXBMC xbmc = new MediaCenterDataXBMC();
-		return xbmc.open(request.getFilename()) ;
+		MediaCenterDataMediaBrowser MediaBrowser = new MediaCenterDataMediaBrowser();
+		return MediaBrowser.open(request.getFilename()) ;
 	}
 
 	@Override
 	public ProviderResponse query(ProviderRequest r) throws ProviderException {
 		if(r.getType() == ProviderRequest.Type.FILM)
 		{
-			
 			MediaInfo i = getInfo(r);
 			if(i != null)
 				return new ProviderResponse(i);
 			else
 				return new ProviderResponse();
 		} else if(r.getType() == ProviderRequest.Type.SERIES) {
-			MediaCenterDataXBMC xbmc = new MediaCenterDataXBMC();
-			MediaInfo i = xbmc.openSeries(r.getFilename());
+			MediaCenterDataMediaBrowser MediaBrowser = new MediaCenterDataMediaBrowser();
+			MediaInfo i = MediaBrowser.openSeries(r.getFilename());
 
 			if(i != null)
 				return new ProviderResponse(i);
@@ -58,8 +56,8 @@ public class ProviderXBMC implements Provider {
 				return new ProviderResponse();
 		} else
 		{
-			MediaCenterDataXBMC xbmc = new MediaCenterDataXBMC();
-			MediaInfo i = xbmc.openEpisode(r.getFilename());
+			MediaCenterDataMediaBrowser MediaBrowser = new MediaCenterDataMediaBrowser();
+			MediaInfo i = MediaBrowser.openEpisode(r.getFilename());
 
 			if(i != null)
 				return new ProviderResponse(i);

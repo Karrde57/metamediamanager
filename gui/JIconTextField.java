@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager.gui;
+*/package com.t3.metamediamanager.gui;
 
 import java.awt.Dimension;
 import java.awt.Graphics;
@@ -24,54 +24,15 @@ import javax.swing.JTextField;
  * @author vincent
  *
  */
-/*public class JIconTextField extends JTextField{
- 
 
-	private static final long serialVersionUID = 1L;
-	private Icon icon;
-    private Insets dummyInsets;
- 
-    public JIconTextField(){
-        super();
-        this.icon = null;
- 
-       // Border border = UIManager.getBorder("TextField.border");
-        JTextField dummy = new JTextField();
-       // this.dummyInsets = border.getBorderInsets(dummy);
-    }
- 
-    public void setIcon(Icon icon){
-        this.icon = icon;
-    }
- 
-    public Icon getIcon(){
-        return this.icon;
-    }
- 
-    @Override
-    protected void paintComponent(Graphics g) {
-        super.paintComponent(g);
- 
-        /*int textX = 2;
- 
-        if(this.icon!=null){
-            int iconWidth = icon.getIconWidth();
-            int iconHeight = icon.getIconHeight();
-            int x = dummyInsets.left + 5;//this is our icon's x
-            textX = x+iconWidth+2; //this is the x where text should start
-            int y = (this.getHeight() - iconHeight)/2;
-            icon.paintIcon(this, g, x, y);
-        }
- 
-        setMargin(new Insets(2, textX, 2, 2));
- 
-    }
- 
-}*/
 
 public class JIconTextField extends JTextField{
 	 
-	 Icon icone;
+	 /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+	Icon icone;
 	 
 	 public JIconTextField(Icon i)
 	 {

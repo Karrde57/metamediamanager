@@ -14,13 +14,12 @@ limitations under the License.
 */package com.t3.metamediamanager;
 
 /**
- * XBMCSaver is used to do the link between MediaCenterDataXBMC and other classes  when XBMC is a saver
+ * MediaBrowserProvider is used to do the link between MediaCenterDataMediaBrowser and other classes  when mediabrowser is a provider
  * @author jmey
- *
  */
-public class XBMCSaver implements Saver {
+public class MediaBrowserSaver implements Saver {
 	
-	MediaCenterDataXBMC _mcdata = new MediaCenterDataXBMC();
+	MediaCenterDataMediaBrowser _mcdata = new MediaCenterDataMediaBrowser();
 
 	@Override
 	public void save(MediaInfo media, String filename) throws ProviderException {

@@ -5,7 +5,8 @@ CREATE TABLE params (
 CREATE TABLE series (
   id INTEGER PRIMARY KEY,
   series_name varchar(255) DEFAULT NULL,
-  series_path varchar(255) DEFAULT NULL
+  series_path varchar(255) DEFAULT NULL,
+  series_poster varchar(255) DEFAULT NULL
 );
 CREATE TABLE medias (
   id INTEGER PRIMARY KEY,

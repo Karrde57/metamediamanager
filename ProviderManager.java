@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -78,7 +78,7 @@ public class ProviderManager {
     
     /**
      * Load the XML configuration file containing especially the priorities
-     * @param filename
+     * @param basename
      */
     public void loadConfig(String basename)
     {
@@ -146,17 +146,63 @@ public class ProviderManager {
     }
     
     /**
+     * This method returns only the providers enabled in the XML configuration file
+     * @return enabled providers names
+     */
+    private Vector<Provider> getEnabledProviders()
+    {
+    	Vector<Provider> res = new Vector<Provider>();
+    	Vector<String> enabledProvidersNames = M3Config.getInstance().getEnabledProviders();
+    	for(Provider p: _providers)
+    	{
+    		if(enabledProvidersNames.contains(p.getName()))
+    			res.add(p);
+    	}
+    	return res;
+    }
+    
+    /**
      * Loads and creates an instance of each provider
      */
     public void loadProviders()
     {
+    	//Base Providers
     	_providers.add(new OmdbProvider());
     	_providers.add(new ProviderXBMC());
     	_providers.add(new TheMovieDBProvider());
     	_providers.add(new OpenSubtitlesProvider());
     	_providers.add(new TheTvdbProvider());
-    	
     	_providers.add(new AllocineProvider());
+    	_providers.add(new MediaBrowserProvider());
+    	
+    	//Plugin Providers
+    	//They are stored in /home/user/.m3/plugins
+    	File pluginsDir = new File(M3Config.getInstance().getUserConfDirectory() + File.separator + "plugins");
+    	if(pluginsDir.exists())
+    	{
+    		File[] potentialPlugins = pluginsDir.listFiles();
+    		List<String> jarFileList = new ArrayList<String>();
+    		//If jar file, we add to the list of providers to load
+    		for(File p : potentialPlugins)
+    		{
+    			if(p.getAbsolutePath().endsWith(".jar"))
+    				jarFileList.add(p.getAbsolutePath());
+    		}
+    		String[] jarFilesTab = new String[jarFileList.size()];
+    		jarFileList.toArray(jarFilesTab);
+    		PluginsLoader loader = new PluginsLoader(jarFilesTab);
+    		
+    		try {
+				Provider[] loadedProviders = loader.loadAllProvider();
+				
+				for(Provider p : loadedProviders)
+					_providers.add(p);
+			} catch (Exception e) {
+
+			}
+    		
+    		
+    	}
     }
     
     //Give all field names of every mediainfo
@@ -199,10 +245,9 @@ public class ProviderManager {
      * @param request
      * @return response of the request
      */
-    public ProviderResponse getInfo(ProviderRequest request)
+    public ProviderResponse getInfo(MediaInfo res, ProviderRequest request)
     {
     	
-		MediaInfo res = null;
 		
 		String errors = "";
 		
@@ -210,8 +255,11 @@ public class ProviderManager {
 		HashMap<Provider, MediaInfo> mediaInfos = new HashMap<Provider,MediaInfo>();
 		
 		List<String> suggested = new ArrayList<String>();
+		
+		Vector<Provider> enabledProviders = this.getEnabledProviders();
+		
 		//On fait une requete sur tous les providers
-		for(Provider provider : _providers)
+		for(Provider provider : enabledProviders)
 		{
 		
 			ProviderResponse response;
@@ -267,7 +315,6 @@ public class ProviderManager {
 			}
 		}
 		
-		res = new MediaInfo();
 		
 		//On mix le tout en prenant en compte les priorités
 		List<String> infosNames = getInfosNames(mediaInfos);

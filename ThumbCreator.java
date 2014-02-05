@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,23 +11,27 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.nio.channels.FileChannel;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Arrays;
 
+/**
+ * Class used to create thumbnails
+ * @author jmey
+ *
+ */
 public class ThumbCreator {
 	String chemin;
 	String osname;
+	
+	/**
+	 * The constructor detects OS
+	 */
 	public ThumbCreator()
 	{
 		String osname = System.getProperty ("os.name").toLowerCase();
@@ -45,14 +49,22 @@ public class ThumbCreator {
 		}
 	}
 	
+	/**
+	 * create #nbthumb thumbnails for the media 
+	 * @param mediafile
+	 * @param nbthumb
+	 * @return
+	 * @throws ThumbException
+	 */
 	public String[] create(File mediafile, int nbthumb) throws ThumbException
 	{
 		String medianame = mediafile.getName();
 		Runtime runtime = Runtime.getRuntime();
 		if(osname.equals("windows"))
 		{
-			File directoryjar = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
-			String chemin = directoryjar.getParentFile().getAbsolutePath() + File.separator + "mtn";
+			//File directoryjar = new File(getClass().getProtectionDomain().getCodeSource().getLocation().getFile());
+			File directoryjar = new File(System.getProperty("user.dir"));
+			String chemin = directoryjar.getAbsolutePath() + File.separator + "mtn";
 
 				Path pathtemp;
 				try {

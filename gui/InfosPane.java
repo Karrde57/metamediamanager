@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,21 +11,20 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager.gui;
+*/package com.t3.metamediamanager.gui;
 
 import java.awt.BorderLayout;
-import java.awt.Color;
 import java.awt.Component;
 import java.awt.Dimension;
+import java.awt.FlowLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.File;
 import java.util.EnumSet;
 import java.util.EventListener;
 import java.util.EventObject;
+import java.util.HashMap;
 
-import javax.swing.AbstractButton;
-import javax.swing.BorderFactory;
 import javax.swing.ImageIcon;
 import javax.swing.JButton;
 import javax.swing.JLabel;
@@ -33,31 +32,29 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTabbedPane;
-import javax.swing.JTextArea;
 import javax.swing.JTextPane;
 import javax.swing.JToggleButton;
 import javax.swing.SwingUtilities;
 import javax.swing.text.JTextComponent;
 
-import net.miginfocom.swing.MigLayout;
-
+import com.t3.metamediamanager.Actor;
 import com.t3.metamediamanager.ActorInfo;
 import com.t3.metamediamanager.Film;
 import com.t3.metamediamanager.M3Config;
 import com.t3.metamediamanager.Media;
 import com.t3.metamediamanager.MediaInfo;
-import com.t3.metamediamanager.ProviderManager;
 import com.t3.metamediamanager.ProviderRequest;
-import com.t3.metamediamanager.ProviderResponse;
 import com.t3.metamediamanager.Series;
 import com.t3.metamediamanager.SeriesEpisode;
 import com.t3.metamediamanager.ThumbCreator;
 import com.t3.metamediamanager.ThumbException;
 
-import java.awt.FlowLayout;
-
 class MediaModifiedEvent extends EventObject
 {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private Media _media;
 	public MediaModifiedEvent(Object source, Media media) {
 		super(source);
@@ -77,26 +74,50 @@ interface MediaModifiedListener extends EventListener
 
 /**
  * Component used to display information from the selected media
- * @author vincent
+ * @author vincent & nicolas
  *
  */
 public class InfosPane extends JPanel {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private static Media _currentMedia = null;
 	private JTabbedPane _pane = new JTabbedPane();
 	private JTextPane textPane;
 	private Searcher _searcher;
-	private JPanel panel_1;
-	private JPanel truc;
-	private static MediaInfo mi;
+	private JPanel _panelSwitchInfos;
+	private JPanel interGeneral;
+	private static MediaInfo mi, miSerie;
 	private ImageGrid ig, igJaquettes, igBackdrop;
-	private SuperMigLayout _smlFilm, _smlSerie;
-	private Boolean _film, _edit = false;
+	private SuperMigLayout _smlFilm, _smlEpisode, _smlSerie;
+	private Boolean _edit = false;
 	private SubtitlesInfo _subtitlesInfo;
+	
+	private HashMap<File, String> _actorsPictureHash;
+	
 	JScrollPane _scrollPane;
 	JButton _btnEdit;
+	private Series _currentSerie;
 
 	
+	/**Enum which describes the current panel
+	 * 
+	 */
+	public enum TypeInfos
+	{
+		FILM,
+		SERIE,
+		EPISODE;
+	}
+	private TypeInfos _type;
 	
+	
+	/**
+	 * 
+	 * @param searcher
+	 * 		
+	 */
 	public InfosPane(Searcher searcher)
 	{
 		super(new BorderLayout());
@@ -104,89 +125,130 @@ public class InfosPane extends JPanel {
 		_searcher = searcher;
 		_subtitlesInfo = new SubtitlesInfo(searcher);
 		
-		truc = new JPanel (new BorderLayout());
-		_pane.addTab("Générales", null, truc, null);
+		
+		//panel general tab
+		interGeneral = new JPanel (new BorderLayout());
+		_pane.addTab("Générales", null, interGeneral, null);
 		
 		
-
-		panel_1 = new JPanel();
-			truc.add(panel_1, BorderLayout.SOUTH);
-			panel_1.setLayout(new BorderLayout(0, 0));
+		
+		_panelSwitchInfos = new JPanel();
+			interGeneral.add(_panelSwitchInfos, BorderLayout.SOUTH);
+			_panelSwitchInfos.setLayout(new BorderLayout(0, 0));
 			
 			textPane = new JTextPane();
-			panel_1.add(textPane);
+			_panelSwitchInfos.add(textPane);
 			
-			JButton btnNewButton_2 = new JButton("Recherche série");
-			btnNewButton_2.addActionListener(new ActionListener() {
+			JButton btnSwitchInfos = new JButton("Afficher informations série");
+			btnSwitchInfos.addActionListener(new ActionListener() {					//compléter le bouton pour afficher le smlSérie !
 				public void actionPerformed(ActionEvent arg0) {
-					Series s = ((SeriesEpisode) _currentMedia).getSeries();
-					ProviderRequest pr = new ProviderRequest(ProviderRequest.Type.SERIES, s.getName(), s.getPath(), "en");
-					ProviderResponse resp = ProviderManager.getInstance().getInfo(pr);
-					s.setInfo(resp.getResponse());
-					s.save();
-					textPane.setText(resp.getResponse().toString());
+					
+					if (_type == TypeInfos.EPISODE)				//if panel = EPISODE
+					{
+						_currentSerie =  ((SeriesEpisode) _currentMedia).getSeries();
+						miSerie = _currentSerie.getInfo();
+						System.out.println(miSerie.toString());
+						setSeries();
+					}
+					else										// else : panel = SERIES
+					{
+						setSeriesEpisode();
+					}
+				 
 				}
 			});
-			panel_1.add(btnNewButton_2);
+			_panelSwitchInfos.add(btnSwitchInfos);
 			
+			//SuperMigLayout tab general (Switch them depending on the media)
 			_smlFilm = new SuperMigLayout(9, "");
-			_smlSerie = new SuperMigLayout(5, "");
+			_smlEpisode = new SuperMigLayout(5, "");
+			_smlSerie = new SuperMigLayout(4, "");
 			_scrollPane = new JScrollPane(_smlFilm);
-			_film = true;
+			
+			//default case : _type = film
+			_type = TypeInfos.FILM;
+			_panelSwitchInfos.setVisible(false);
+			
 			_scrollPane.getVerticalScrollBar().setUnitIncrement(16);	//vitesse de scrolling
 			
+			//2nd interPanel in generalInfos
+			JPanel interGeneral2 = new JPanel(new BorderLayout());
+			interGeneral2.add(_scrollPane, BorderLayout.CENTER);
+			interGeneral.add(interGeneral2, BorderLayout.CENTER);
 			
-			JPanel inter2 = new JPanel(new BorderLayout());
-			inter2.add(_scrollPane, BorderLayout.CENTER);
-			truc.add(inter2, BorderLayout.CENTER);
-			
-		
+		//panel Actors tab
+		JPanel interActors = new JPanel(new BorderLayout());
 		ig = new ImageGrid();
-		JPanel inter = new JPanel(new BorderLayout());
-		inter.add(ig, BorderLayout.CENTER);
-		_pane.addTab("Acteurs", null, inter, null);	
+		ig.addCellSelectedListener(new CellSelectedListener(){
+
+			@Override
+			public void imageChanged(CellSelectedEvent e) {
+				//when the users clicks on an actor, we show more information about him
+				Actor a = Actor.getByName(_actorsPictureHash.get(e.getCell().getImageFile()));
+				if(a != null)
+				{
+					ActorInfoFrame frame = new ActorInfoFrame(a);
+					frame.setVisible(true);
+					frame.pack();
+				}
+			}
+			
+		});
+		interActors.add(ig, BorderLayout.CENTER);
+		_pane.addTab("Acteurs", null, interActors, null);	
 		
-		igJaquettes = new ImageGrid();
+		//panel Jaquettes tab
 		JPanel interJaquettes = new JPanel(new BorderLayout());
+		igJaquettes = new ImageGrid();
 		interJaquettes.add(igJaquettes, BorderLayout.CENTER);
 		_pane.addTab("Jaquettes", null, interJaquettes, null);
 		igJaquettes.addCellSelectedListener(new CellSelectedListener() {
 			@Override
 			public void imageChanged(CellSelectedEvent e) {
-				setJaquettePréféré(e.getCell().getImageFile());
+				setJaquettePrefere(e.getCell().getImageFile());
 			}
 		});
 		
+		//panel Backdrop tab
+		JPanel interBackdrop = new JPanel(new BorderLayout());
 		igBackdrop = new ImageGrid();
 		igBackdrop.setDefaultCellSize(new Dimension(530, 300));
-		JPanel interBackdrop = new JPanel(new BorderLayout());
 		interBackdrop.add(igBackdrop, BorderLayout.CENTER);
 		_pane.addTab("Miniatures", null, interBackdrop, null);
 
 		
-		//JLabel lblNewLabel_6 = new JLabel("New label");
-		//_pane.addTab("Bandes annonces", null, lblNewLabel_6, null);
-		
+		//panel Subtitles tab
 		_pane.addTab("Sous-titres", null, _subtitlesInfo, null);
+		
 		
 		add(_pane, BorderLayout.CENTER);
 		
-		JPanel panel = new JPanel();
-		add(panel, BorderLayout.SOUTH);
+		
+		
+		
+		//place the buttons at the bottom of the infosPane
+		JPanel panelBtnBas = new JPanel();
+		add(panelBtnBas, BorderLayout.SOUTH);
 		
 		JToggleButton btnEdit = new JToggleButton ("Edit");
 		btnEdit.setIcon(new ImageIcon(InfosPane.class.getResource("/com/t3/metamediamanager/gui/icons/Document.png")));
 
 		btnEdit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				if(_film)
+				if(_type == TypeInfos.FILM)
 				{
 					_smlFilm.SwitchAllCompos();
 				}
-				else
+				else if(_type == TypeInfos.EPISODE)
 				{
-					_smlSerie.SwitchAllCompos();
+					_smlEpisode.SwitchAllCompos();
 				}
+				else if(_type == TypeInfos.SERIE)
+				{
+					_smlSerie.SwitchAllCompos();		//à vérifier !
+				}
+				
+				
 				
 				if (_edit == true)
 				{
@@ -199,8 +261,8 @@ public class InfosPane extends JPanel {
 				}
 			}
 		});
-		panel.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
-		panel.add(btnEdit);
+		panelBtnBas.setLayout(new FlowLayout(FlowLayout.CENTER, 5, 5));
+		panelBtnBas.add(btnEdit);
 		
 		JButton btnMtn = new JButton("Miniatures");
 		btnMtn.setIcon(new ImageIcon(InfosPane.class.getResource("/com/t3/metamediamanager/gui/icons/My Images.png")));
@@ -240,7 +302,7 @@ public class InfosPane extends JPanel {
 			}
 		});
 		
-		panel.add(btnMtn);
+		panelBtnBas.add(btnMtn);
 		
 		
 		
@@ -261,9 +323,17 @@ public class InfosPane extends JPanel {
 			}
 		});
 		
-		panel.add(btnAllImg);
+		panelBtnBas.add(btnAllImg);
 	}
 	
+	
+	
+	
+	/**
+	 * //Set the different tabs of the InfosPane depending on the type of the media
+	 * @param media
+	 * 		Set the informations about this media
+	 */
 	public void setCurrentMedia(Media media)
 	{
 		_currentMedia = media;
@@ -287,20 +357,34 @@ public class InfosPane extends JPanel {
 		setGeneralThumbnail();
 	}
 	
+	
+	/**Choose the method of SML to execute depending on the type of the media.
+	 * Set the thumbnails
+	 * 
+	 */
 	public void setGeneralThumbnail()
 	{
-		if (_film)
+		if (_type == TypeInfos.FILM)
 		{
 			_smlFilm.setThumbnail();
 		}
+		else if (_type == TypeInfos.EPISODE)
+		{
+			_smlEpisode.setThumbnail();
+		}
 	}
 	
+	
+	/**Set the information in general Tab (for a movie)
+	 *
+	 */
 	public void setFilm()
 	{
-		if(_film == false)
+		if(_type != TypeInfos.FILM)
 		{
 			_scrollPane.setViewportView(_smlFilm);
-			_film = true;
+			_type = TypeInfos.FILM;
+			_panelSwitchInfos.setVisible(false);
 		}
 			_smlFilm.modifCompo(0,mi.get("title"));
 			if( _smlFilm.getLength() <= 1)
@@ -351,59 +435,129 @@ public class InfosPane extends JPanel {
 	}
 		
 	
+
+	/**Set the information in general Tab (for an episode)
+	 * 
+	 */
 	public void setSeriesEpisode()
 	{
-		if(_film == true)
+		if(_type != TypeInfos.EPISODE)
 		{
-			_scrollPane.setViewportView(_smlSerie);
-			_film = false;
+			_scrollPane.setViewportView(_smlEpisode);
+			_type = TypeInfos.EPISODE;
+			_panelSwitchInfos.setVisible(true);
 		}
-		_smlSerie.modifCompo(0,mi.get("title"));
-		if( _smlSerie.getLength() <= 1)
+		_smlEpisode.modifCompo(0,mi.get("title"));
+		_smlEpisode.setMedia(_currentMedia);
+		if( _smlEpisode.getLength() <= 1)
 		{
-			_smlSerie.setMedia(_currentMedia);
 			JLabel filename = new JLabel("<html>"+_currentMedia.getFilename()+"</html>");
 			filename.setName("filename");
-			_smlSerie.setComponent(1,"Filename",filename);
+			_smlEpisode.setComponent(1,"Filename",filename);
 			JLabel synopsis = new JLabel("<html>"+mi.get("synopsis")+"</html>");
 			synopsis.setName("synopsis");
-			_smlSerie.setComponent(2, "Synopsis", synopsis);
+			_smlEpisode.setComponent(2, "Synopsis", synopsis);
 			JLabel rating = new JLabel("<html>"+mi.get("rating")+"</html>");
 			rating.setName("rating");
-			_smlSerie.setComponent(3, "Note", rating);
+			_smlEpisode.setComponent(3, "Note", rating);
 			JLabel writer = new JLabel("<html>"+mi.get("writer")+"</html>");
 			writer.setName("writer");
-			_smlSerie.setComponent(4, "Writer",writer);
+			_smlEpisode.setComponent(4, "Writer",writer);
 			JLabel director = new JLabel("<html>"+mi.get("director")+"</html>");
 			director.setName("director");
-			_smlSerie.setComponent(5, "Director", director);
+			_smlEpisode.setComponent(5, "Director", director);
 		}
 		else
 		{
-			_smlSerie.setMedia(_currentMedia);
-			_smlSerie.modifCompo(1,_currentMedia.getFilename());
-			_smlSerie.modifCompo(2,mi.get("synopsis"));
-			_smlSerie.modifCompo(3,mi.get("rating"));
-			_smlSerie.modifCompo(4,mi.get("writer"));
-			_smlSerie.modifCompo(5,mi.get("director"));
+			_smlEpisode.modifCompo(1,_currentMedia.getFilename());
+			_smlEpisode.modifCompo(2,mi.get("synopsis"));
+			_smlEpisode.modifCompo(3,mi.get("rating"));
+			_smlEpisode.modifCompo(4,mi.get("writer"));
+			_smlEpisode.modifCompo(5,mi.get("director"));
 		}
 		
 	}
 	
+	/**Set the information in general tab (for a serie)
+	 * 
+	 * @param se
+	 */
+	public void setSeries (SeriesEpisode se)
+	{
+		_currentSerie =  ((SeriesEpisode) se).getSeries();
+		miSerie = _currentSerie.getInfo();
+		System.out.println(miSerie.toString());
+		setSeries();
+	}
+	
+	public void setSeries (Series s)
+	{
+		_currentSerie = s;
+		miSerie = _currentSerie.getInfo();
+		setSeries();
+	}
+	
+	
+	/**Set the information in general tab (for a serie)
+	 * 
+	 */
+	public void setSeries()
+	{
+		if(_type != TypeInfos.SERIE)
+		{
+			_scrollPane.setViewportView(_smlSerie);
+			_type = TypeInfos.SERIE;
+			_panelSwitchInfos.setVisible(true);
+		}
+		_smlSerie.modifCompo(0,miSerie.get("title"));
+		_smlSerie.setMedia(_currentSerie.getInfo());					//problème ici !
+		if(_smlSerie.getLength() <= 1)
+		{	
+			System.out.println(miSerie.get("genre"));
+			JLabel genre = new JLabel("<html>"+miSerie.get("genre")+"</html>");
+			genre.setName("genre");
+			_smlSerie.setComponent(1,"Genre(s)",genre);
+			JLabel synopsis = new JLabel("<html>"+miSerie.get("synopsis")+"</html>");
+			synopsis.setName("synopsis");
+			_smlSerie.setComponent(2, "Synopsis", synopsis);
+			JLabel rating = new JLabel("<html>"+miSerie.get("rating")+"</html>");
+			rating.setName("rating");
+			_smlSerie.setComponent(3, "Note", rating);
+			JLabel runtime = new JLabel("<html>"+miSerie.get("runtime")+"</html>");
+			runtime.setName("runtime");
+			_smlSerie.setComponent(4, "Durée", runtime);
+		}
+		else
+		{
+			_smlSerie.modifCompo(1,miSerie.get("genre"));
+			_smlSerie.modifCompo(2,miSerie.get("synopsis"));
+			_smlSerie.modifCompo(3,miSerie.get("rating"));
+			_smlSerie.modifCompo(4,miSerie.get("runtime"));
+		}
+		
+	}
+	
+	/**set the actors (pictures + role) in actors tab
+	 * 
+	 */
 	public void setActors()
 	{
 		ActorInfo[] tabActors = mi.getActors();
 		ig.clean();
-		
+		_actorsPictureHash = new HashMap<File,String>();
 		for(ActorInfo a : tabActors)
 		{
 			File f = new File(M3Config.getInstance().getUserConfDirectory() + a.getImgUrl());
+			_actorsPictureHash.put(f, a.getName());
 			ImageCell cellule = new ImageCell(f,"<html>"+a.getName()+"<br /><FONT size='4'>"+a.getRole()+"</FONT></html>");
 			ig.addCell(cellule);
 			ig.updateUI();
 		}
 	}
 	
+	/**set the backdrops in the backdrops tab
+	 * 
+	 */
 	public void setBackdrop()
 	{
 		String[] tabBackdrop = mi.getImages("img_backdrop");
@@ -418,6 +572,10 @@ public class InfosPane extends JPanel {
 		}
 	}
 	
+	
+	/**set the jackets in the jackets tab
+	 * 
+	 */
 	public void setJaquette()
 	{
 		String[] tabJaquettes = mi.getImages("img_poster");
@@ -432,26 +590,53 @@ public class InfosPane extends JPanel {
 		}
 	}
 	
+	
+	/**save the informations of the current media
+	 * 
+	 */
 	public void save()
 	{
-		Component[] tab;
-		if(_film)
+		Component[] tab = null;
+		if(_type == TypeInfos.FILM)
 		{
 			tab = _smlFilm.getTab();
 		}
-		else
+		else if (_type == TypeInfos.EPISODE)
+		{
+			tab = _smlEpisode.getTab();
+		}
+		else if (_type == TypeInfos.SERIE)
 		{
 			tab = _smlSerie.getTab();
 		}
 		
 		for (Component c : tab)
 		{
-			 mi.put(c.getName(), ((JTextComponent) c).getText());
+			if (_type == TypeInfos.SERIE)
+			{
+			System.out.println("Nom de compo :" + c.getName() + "texte : " +((JTextComponent) c).getText());
+			 miSerie.put(c.getName(), ((JTextComponent) c).getText());
+			}
+			else
+			{
+				mi.put(c.getName(), ((JTextComponent) c).getText());
+			}
 		}
-		_currentMedia.save();
-	}
+		if (_type == TypeInfos.SERIE)
+		{
+			_currentSerie.save();
+		}
+		else
+			_currentMedia.save();
+	}	
 	
-	public void setJaquettePréféré(File jaquette)	//à l'air de marcher
+	/**allow the user to choose his favorite jacket
+	 * 
+	 * @param jaquette
+	 * 		The path of the jacket
+	 * @throws RuntimeException
+	 */
+	public void setJaquettePrefere(File jaquette)
 	{
 				
 		String[] tabJaquette = mi.getImages("img_poster");

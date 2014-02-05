@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager.gui;
+*/package com.t3.metamediamanager.gui;
 
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -22,7 +22,6 @@ import java.awt.event.MouseEvent;
 import java.util.EventListener;
 import java.util.EventObject;
 
-import javax.swing.JFrame;
 
 import net.miginfocom.swing.MigLayout;
 
@@ -34,6 +33,10 @@ import javax.swing.JTextField;
 import javax.swing.SwingUtilities;
 
 class NameSelectedEvent extends EventObject {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private String _name;
 	public NameSelectedEvent(Object source, String name) {
 		super(source);
@@ -50,9 +53,19 @@ interface NameSelectedListener extends EventListener {
 	public void onNameSelected(NameSelectedEvent e);
 }
 
+/**
+ * Displays the list of suggestions for a media.
+ * It's used at the end of a search, when a media has not been found. We ask for a better name.
+ * @author vincent
+ *
+ */
 public class SuggestionsFrame extends JPanel {
-	private JTextField textField;
-	private String _returnedName = "";
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	private String _returnedName = ""; //The final "new name" of the film, choosen by the user
 	private String[] _suggestions;
 	private JList<String> list;
 	private JTextField _txtName;
@@ -82,6 +95,11 @@ public class SuggestionsFrame extends JPanel {
 		listenerList.remove(NameSelectedListener.class, l);
 	}
 	
+	/**
+	 * Constructs the frame
+	 * @param name of the media
+	 * @param suggestions of the media
+	 */
 	public SuggestionsFrame(String name, String[] suggestions) {
 		_suggestions = suggestions;
 		setLayout(new MigLayout("", "[grow][grow][grow][][grow]", "[][][grow][][]"));
@@ -98,6 +116,9 @@ public class SuggestionsFrame extends JPanel {
 		
 		add(list, "cell 0 2 5 1,grow");
 		
+		//When the user click on a suggestion :
+		// 1 clic : we copy it in the textfield
+		// Double clic : it's okay, the final "new name" is used
 		list.addMouseListener(new MouseAdapter(){
 			public void mouseClicked(MouseEvent evt) {
 				JList<String> list = SuggestionsFrame.this.list;
@@ -114,6 +135,7 @@ public class SuggestionsFrame extends JPanel {
 		    }
 		});
 		
+		//The good name to use can also be chosen by pressing Enter.
 		KeyListener kl = new KeyListener() {
 			@Override
 			public void keyPressed(KeyEvent arg0) {
@@ -153,6 +175,7 @@ public class SuggestionsFrame extends JPanel {
 		
 		addKeyListener(kl);
 		list.addKeyListener(kl);
+		//If we press Enter while the text field is focused, we use it's text for the "new name" of the movie
 		_txtName.addKeyListener(new KeyListener() {
 
 			@Override

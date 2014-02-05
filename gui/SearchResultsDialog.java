@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,9 +11,8 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager.gui;
+*/package com.t3.metamediamanager.gui;
 
-import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map.Entry;
@@ -24,29 +23,34 @@ import com.t3.metamediamanager.*;
 
 import net.miginfocom.swing.MigLayout;
 
-import javax.swing.JButton;
-import javax.swing.JPanel;
 import javax.swing.JTextPane;
-
-import java.awt.Dimension;
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
 
 import javax.swing.JLabel;
 
+/**
+ * Window displayed at the end of a search. We ask the user if we must search again and which names to use
+ * @author vincent
+ *
+ */
 public class SearchResultsDialog extends JDialog {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	private List<Entry<Searchable,ProviderResponse>> _responses;
 	private SuggestionsFrame currentPanel = null;
 	int currentIndex = 0;
 	
-	private List<String> _newNames = new ArrayList<String>();
 	private List<Searchable> _SearchablesToSearchAgain = new ArrayList<Searchable>();
 	
 	private JLabel _lblInfo;
 	
+	/**
+	 * Called when the user : double click on a item of the list, or "cancel"
+	 */
 	private void nextSearchable()
 	{
-		if(currentIndex == _responses.size())
+		if(currentIndex == _responses.size()) //We are at the end
 		{
 			setVisible(false);
 			return;
@@ -59,30 +63,35 @@ public class SearchResultsDialog extends JDialog {
 		
 		getContentPane().validate();
 		
+		currentIndex++;
 		
 		
 		
-		currentPanel = new SuggestionsFrame(_responses.get(currentIndex).getKey().getName(), _responses.get(currentIndex).getValue().getSuggested());
+		//We display a new list of suggestions
+		currentPanel = new SuggestionsFrame(_responses.get(currentIndex-1).getKey().getName(), _responses.get(currentIndex-1).getValue().getSuggested());
 		getContentPane().add(currentPanel, "cell 0 1 5 1,grow");
 		
 		getContentPane().validate();
 		
+		//When the user chooses a suggestion, we save it and go to the next media.
 		currentPanel.addNameSelectedListener(new NameSelectedListener() {
 			@Override
 			public void onNameSelected(NameSelectedEvent e) {
 				String newName = e.getName();
 				if(!newName.isEmpty())
 				{
-					_newNames.add(newName);
-					_SearchablesToSearchAgain.add(_responses.get(currentIndex-1).getKey());
-									}
+					Searchable searchable = _responses.get(currentIndex-1).getKey();
+					searchable.getInfo().put("title", newName);
+					searchable.save();
+					_SearchablesToSearchAgain.add(searchable);
+				}
 				nextSearchable();
 			}
 		});
 		
 	 pack();
 		
-		currentIndex++;
+		
 		
 		
 	}
@@ -92,6 +101,11 @@ public class SearchResultsDialog extends JDialog {
 		_lblInfo.setText("Demande " + (currentIndex + 1) + " sur " + _responses.size());
 	}
 	
+	/**
+	 * Constructs the window and inits the list
+	 * @param resp responses of the search
+	 * @param errors
+	 */
 	public SearchResultsDialog (List<Entry<Searchable,ProviderResponse>> resp, String errors)
 	{
 		super();
@@ -122,13 +136,7 @@ public class SearchResultsDialog extends JDialog {
 		
 		
 	}
-	
-	public String[] getNewNames()
-	{
-		String[] array = new String[_newNames.size()];
-		_newNames.toArray(array);
-		return array;
-	}
+
 	
 	public Searchable[] getSearchablesToSearchAgain()
 	{

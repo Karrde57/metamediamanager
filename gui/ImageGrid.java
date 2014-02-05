@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager.gui;
+*/package com.t3.metamediamanager.gui;
 
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
@@ -48,6 +48,11 @@ interface CellSelectedListener extends EventListener
 	public void imageChanged(CellSelectedEvent e);
 }
 
+/**
+ * Grid used to display many images. The user can select the image.
+ * @author vincent
+ *
+ */
 public class ImageGrid extends JScrollPane {
 	
 	private Dimension _defaultCellDim = new Dimension(190,360);
@@ -68,6 +73,7 @@ public class ImageGrid extends JScrollPane {
 
 		getVerticalScrollBar().setUnitIncrement(16);
 		
+		//Zoom feature
 		addMouseWheelListener(new MouseWheelListener() {
 
 			@Override
@@ -111,12 +117,16 @@ public class ImageGrid extends JScrollPane {
 	
 
 	
-	
+	/**
+	 * Adds a cell in the grid
+	 * @param ic
+	 */
 	public void addCell(ImageCell ic)
 	{
 		ActionListener a = new ActionListener()
 		{
 
+			//When the user click on the cell, it became selected. We unselect every other cells.
 			@Override
 			public void actionPerformed(ActionEvent e) {
 				ImageCell mc = (ImageCell) e.getSource();

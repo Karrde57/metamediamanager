@@ -3,7 +3,7 @@
 	<field name="budget" markup="budget" />
 	<field name="type" markup="genres" />
 	<field name="originaltitle" markup="originaltitle" />
-	<field name="synopsis" markup="overview" />
+	<field name="synopsis" markup="Overview" />
 	<field name="adult" markup="adult" />
 	<field name="studio" markup="productions_companies" />
 	<field name="country" markup="production_country" />
@@ -16,7 +16,7 @@
 	<field name="day" markup="Airs_DayOfWeek" />
 	<field name="hour" markup="Airs_Time" />
 	<field name="date" markup="FirstAired" />
-	<field name="type" markup="Genre" />
+	<field name="genre" markup="Genre" />
 	<field name="language" markup="Language" />
 	<field name="channels" markup="Network" />
 	<field name="rating" markup="Rating" />

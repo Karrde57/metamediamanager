@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager.gui;
+*/package com.t3.metamediamanager.gui;
 
 import java.util.Vector;
 
@@ -29,14 +29,11 @@ import javax.swing.JPopupMenu;
 
 import com.t3.metamediamanager.M3Config;
 
-import java.awt.Dimension;
-import java.awt.MouseInfo;
-import java.awt.Point;
+
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
 
 import javax.swing.JScrollPane;
-import javax.swing.JMenu;
 
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
@@ -44,6 +41,7 @@ import java.awt.event.MouseEvent;
 
 /**
  * Panel used in Options window and First Use window allowing the user to add and remove the directories to be searched.
+ * Two swing lists are used, and it generates two vector<string> used in M3Config (M3Config loads and save these vectors)
  * @author vincent
  *
  */
@@ -57,12 +55,10 @@ public class DirectoriesChooserPanel extends JPanel {
 	
 	private class ListItem {
 		public String path;
-		public boolean isFilm;
 		
 		public ListItem(String path, boolean isFilm)
 		{
 			this.path = path;
-			this.isFilm = isFilm;
 		}
 		
 		@Override
@@ -96,6 +92,10 @@ public class DirectoriesChooserPanel extends JPanel {
 		
 	}
 	
+	/**
+	 * Internal method called when the user wants to add a directory (series or movies)
+	 * @param filmsDir
+	 */
 	private void addDirectory(boolean filmsDir)
 	{
 		JFileChooser j = new JFileChooser();
@@ -138,6 +138,8 @@ public class DirectoriesChooserPanel extends JPanel {
 		add(scrollPane, "cell 0 1 5 1,grow");
 				
 		_lstFilms = new JList<ListItem>(_mdlFilms);
+		
+		//Contextual menu for movies
 		_lstFilms.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e)  {check(e);}
 			public void mouseReleased(MouseEvent e) {check(e);}
@@ -155,7 +157,7 @@ public class DirectoriesChooserPanel extends JPanel {
 		
 		scrollPane.setViewportView(_lstFilms);
 		
-		JLabel lblNewLabel_2 = new JLabel("<html>Vos films peuvent être organisés en \"vrac\" dans ces dossiers.</html>");
+		JLabel lblNewLabel_2 = new JLabel("<html>Vos films peuvent être organisés en \"vrac\" dans ces dossiers. <br /> <br /> <b> Pour supprimer un dossier : clic droit puis \"supprimer\" </b></html>");
 		add(lblNewLabel_2, "cell 5 1");
 		
 		JLabel lblNewLabel_1 = new JLabel("Vos dossiers de séries :");
@@ -167,6 +169,8 @@ public class DirectoriesChooserPanel extends JPanel {
 		_lstSeries = new JList<ListItem>(_mdlSeries);
 		scrollPane_1.setViewportView(_lstSeries);
 				
+		
+		//Contextual menu for series
 		_lstSeries.addMouseListener(new MouseAdapter() {
 			public void mousePressed(MouseEvent e)  {check(e);}
 			public void mouseReleased(MouseEvent e) {check(e);}
@@ -187,7 +191,7 @@ public class DirectoriesChooserPanel extends JPanel {
 			}
 		});
 		
-		JLabel lblNewLabel_3 = new JLabel("<html>Un dossier de séries doit respecter l'arboresence suivante :<br>-Nom Série<br>    -xxxS01E01.avi<br>    -xxxS01E02.avi<br>...<br><br>Vous pouvez organiser, ou non, les épisodes par dossier de saison du moment que le format de nom des épisodes est respecté.</html>");
+		JLabel lblNewLabel_3 = new JLabel("<html>Un dossier de séries doit respecter l'arboresence suivante :<br>-Nom Série<br>    -xxxS01E01.avi<br>    -xxxS01E02.avi<br>-xxx1x3.avi<br>...<br><br>Vous pouvez organiser, ou non, les épisodes par dossier de saison du moment que le format de nom des épisodes est respecté (format changeable dans les options)</html>");
 		add(lblNewLabel_3, "cell 5 3");
 		add(btnNewButton, "cell 1 4");
 		

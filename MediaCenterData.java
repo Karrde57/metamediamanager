@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,9 +11,10 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 /**
  * Abstract class used for local providers and savers : for example, it allows to open and save NFO XBMC files
+ * @author jmey
  */
 public abstract class MediaCenterData {
 	/**
@@ -21,7 +22,6 @@ public abstract class MediaCenterData {
 	 * @return String name
 	 */
 	public abstract String getName();
-	protected FieldsConfig _saverconfig = new FieldsConfig(getName());
 	/**
 	 * FOR A FILM
 	 * open the .nfo or .jdom or .xml depending of the media center and read it.
@@ -36,31 +36,30 @@ public abstract class MediaCenterData {
 	 * save the mediaInfo of the Media given in parameter into a .xml or .jdom or .xml depending
 	 * of the media center.
 	 * can also copy images in the cache into the folder of the film and actor's images
-	 * @param media
+	 * @param info
 	 * @throws ProviderException
 	 */
-	public abstract void save(Media media) throws ProviderException;
+	public abstract void save(MediaInfo info, String filename) throws ProviderException;
 	/**
 	 * FOR A SERIES
 	 * save the mediaInfo of the Media given in parameter into a .xml or .jdom or .xml depending
 	 * of the media center.
 	 * can also copy images in the cache into the folder of the series and actor's images
-	 * @param media
+	 * @param info
 	 */
-	public abstract void saveSeries(Series media);
+	public abstract void saveSeries(MediaInfo info, String directory);
 	/**
 	 * FOR A EPISODE
 	 * save the mediaInfo of the Media given in parameter into a .xml or .jdom or .xml depending
 	 * of the media center.
 	 * can also copy images in the cache into the folder of the episode and actor's images
-	 * @param media
+	 * @param info
 	 */
-	public abstract void saveEpisode(SeriesEpisode media);
+	public abstract void saveEpisode(MediaInfo info, String filename);
 	/**
 	 * open the .xml or .jdom or.nfo (depending of the media center and copy informations into a MediaInfo
 	 * can also copy images of the series into the cache.
 	 * @param filename
-	 * @return
 	 * @throws ProviderException
 	 */
 	public abstract MediaInfo openSeries(String filename) throws ProviderException;

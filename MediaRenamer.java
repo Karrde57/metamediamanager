@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,54 +11,99 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 
 import java.io.File;
+import java.util.Vector;
 
+/** 
+ * This class is used to manipulate the name or the location of medias
+ * @author jmey
+ *
+ */
 public class MediaRenamer {
 
-	
-	
-	public static void rename(Media[] medialist, String format, String type) 
+	/**
+	 * this function create a directory for each film
+	 */
+	public static void folderEachFilm()
 	{
-		for(int i=0;i<medialist.length;i++)
+		MediaFilter mf = new MediaFilter(MediaFilter.Type.FILMS);
+		Vector<Media> mediasv = Media.searchByName("", mf);
+		Object[] mediaso = mediasv.toArray();
+		Media[] medialist = new Media[mediaso.length];
+		for(int i=0;i<mediaso.length;i++)
 		{
-			System.out.println(medialist[i].getName());
+			medialist[i] = (Media) mediaso[i];
 		}
 		for(int i=0;i<medialist.length;i++)
 		{
-			System.out.println("Renommage du film " + i);
-				Media media = medialist[i];
-			
-			
-			String newname = format;
-
-
-			MediaInfo info = media.getInfo();
-			
-			
-			if(type.equals("episode"))
+			String filename = medialist[i].getFilename().substring(medialist[i].getFilename().lastIndexOf(File.separator)+1, medialist[i].getFilename().lastIndexOf('.'));
+			// -> name of the film
+			System.out.println(filename);
+			char[] forbiddenchar = {':', '*', '?' , '"', '<', '>', '|', '/', '\\'};
+			for(int i2=0;i2<forbiddenchar.length;i2++)
 			{
+				for(int i3=0;i3<filename.length();i3++)
+				{
+					if(filename.charAt(i3) == forbiddenchar[i2])
+						filename = filename.replace(filename.charAt(i3), ' ');
+				}
+			}
+			String extension = medialist[i].getFilename().substring(medialist[i].getFilename().lastIndexOf('.'));
+			File mediafile = new File(medialist[i].getFilename());
+
+			File newfolder = new File(mediafile.getAbsolutePath().substring(0, medialist[i].getFilename().lastIndexOf(File.separator)+1) + File.separator + filename);
+			newfolder.mkdir();
+			File newmediafile = new File(newfolder, filename + extension);
+			System.out.println(newmediafile.getAbsolutePath());
+			mediafile.renameTo(newmediafile);
+			medialist[i]._filename = newmediafile.getAbsolutePath();
+			medialist[i].save();
+		}
+	}
+	
+	/**
+	 * this function rename the media contains in the medialist with the format indicate
+	 * @param medialist
+	 * @param format
+	 * @param type
+	 */
+	public static void rename(Media[] medialist, String format, String type) 
+	{
+		//System.out.println(Arrays.toString(medialist));
+		for(int i=0;i<medialist.length;i++)
+		{
+			
+			Media media = medialist[i];
+			String newname = format;
+			System.out.println("ancien nom =" + newname);
+			if(media instanceof SeriesEpisode)
+			{
+				SeriesEpisode se = (SeriesEpisode) media;
+				MediaInfo info = media.getInfo();
 				while(newname.contains("%t") || newname.contains("%o") || newname.contains("%a") || newname.contains("%s") || newname.contains("%e"))
 				{
-					newname = replace(newname, "%t", info.get("title") );
+					newname = replace(newname, "%t", info.get("title"));
 					newname = replace(newname, "%o", info.get("originaltitle"));
 					if(info.get("release") == null || info.get("release") != "")
 					{
-						newname = replace(newname, "%a", info.get("release"));
+					newname = replace(newname, "%a", info.get("release"));
 					}
 					else
 					{
 						newname = replace(newname, "%a", info.get("year"));
 					}
-					newname = replace(newname, "%s", info.get("season"));
-					newname = replace(newname, "%e", info.get("episode"));
+					newname = replace(newname, "%s", se.getSeasonNumber()+"");
+					newname = replace(newname, "%e", se.getEpisodeNumber()+"");
+					
 				}
-			
+				System.out.println("Nouveau nom par mediarenamer : " + newname);
 				media.renameMediaString(newname);
 			}
-			else if(type.equals("film"))
+			else if(media instanceof Film)
 			{
+				MediaInfo info = media.getInfo();
 				while(newname.contains("%t") || newname.contains("%o") || newname.contains("%a"))
 				{
 					newname = replace(newname, "%t", info.get("title"));
@@ -82,7 +127,15 @@ public class MediaRenamer {
 		
 				
 	}
-    public static String replace(String originalText,
+	
+	/**
+	 * replace a string by an other
+	 * @param originalText
+	 * @param subStringToFind
+	 * @param subStringToReplaceWith
+	 * @return
+	 */
+    private static String replace(String originalText,
 			 String subStringToFind, String subStringToReplaceWith) {
 int s = 0;
 int e = 0;

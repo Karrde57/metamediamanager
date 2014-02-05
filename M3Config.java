@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 
 import java.io.File;
 import java.io.FileNotFoundException;
@@ -31,6 +31,11 @@ import org.jdom2.input.SAXBuilder;
 import org.jdom2.output.Format;
 import org.jdom2.output.XMLOutputter;
 
+/**
+ * Class used to read and save config.xml
+ * @author vincent
+ *
+ */
 public final class M3Config {
 	//Pour le Singleton
     private static volatile M3Config instance = null;
@@ -42,6 +47,9 @@ public final class M3Config {
     private HashMap<String,String> _params = new HashMap<String,String>();
     private Vector<String> _filmsDirectories = new Vector<String>();
     private Vector<String> _seriesDirectories = new Vector<String>();
+    
+    private Vector<String> _enabledSavers = new Vector<String>();
+    private Vector<String> _enabledProviders = new Vector<String>();
     
     String _confDir;
     
@@ -136,6 +144,28 @@ public final class M3Config {
         	   _seriesDirectories.add(current.getAttributeValue("url"));
            }
         }
+        
+      //Remplissage des infos de savers activés
+        List<Element> listSavers = _root.getChildren("enabledSaver");
+        
+        i = listSavers.iterator();
+        while(i.hasNext())
+        {
+           Element current = i.next();
+           _enabledSavers.add(current.getText());
+           
+        }
+        
+        //Remplissage des infos de providers activés
+        List<Element> listProviders = _root.getChildren("enabledProvider");
+        
+        i = listProviders.iterator();
+        while(i.hasNext())
+        {
+           Element current = i.next();
+           _enabledProviders.add(current.getText());
+           
+        }
     }
     
     /**
@@ -170,6 +200,16 @@ public final class M3Config {
     	return _seriesDirectories;
     }
     
+    public Vector<String> getEnabledSavers()
+    {
+    	return _enabledSavers;
+    }
+    
+    public Vector<String> getEnabledProviders()
+    {
+    	return _enabledProviders;
+    }
+    
     public void setFilmsDirectories(Vector<String> dir)
     {
     	if(dir==null)
@@ -184,6 +224,23 @@ public final class M3Config {
     	_seriesDirectories = dir;
     }
     
+    public void setEnabledSavers(Vector<String> dir)
+    {
+    	if(dir==null)
+    		throw new IllegalArgumentException();
+    	_enabledSavers = dir;
+    }
+    
+    public void setEnabledProviders(Vector<String> dir)
+    {
+    	if(dir==null)
+    		throw new IllegalArgumentException();
+    	_enabledProviders = dir;
+    }
+
+    /**
+     * Saves all parameters in "config.xml" file located in the user directory
+     */
     public void save()
     {
     	try
@@ -213,6 +270,22 @@ public final class M3Config {
     			Element d = new Element("dir");
     			d.setAttribute("type", "series");
     			d.setAttribute("url", dir);
+    			root.addContent(d);
+    		}
+    		
+    		//Enabled savers
+    		for(String s : _enabledSavers)
+    		{
+    			Element d = new Element("enabledSaver");
+    			d.setText(s);
+    			root.addContent(d);
+    		}
+    		
+    		//Enabled providers
+    		for(String s : _enabledProviders)
+    		{
+    			Element d = new Element("enabledProvider");
+    			d.setText(s);
     			root.addContent(d);
     		}
     		

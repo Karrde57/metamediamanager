@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 
 import java.io.DataInputStream;
 import java.io.File;
@@ -41,7 +41,8 @@ public class OpenSubtitlesHasher {
                 long size = file.length();
                 long chunkSizeForFile = Math.min(HASH_CHUNK_SIZE, size);
                 
-                FileChannel fileChannel = new FileInputStream(file).getChannel();
+                FileInputStream fis = new FileInputStream(file);
+                FileChannel fileChannel = fis.getChannel();
                 
                 try {
                         long head = computeHashForChunk(fileChannel.map(MapMode.READ_ONLY, 0, chunkSizeForFile));
@@ -50,6 +51,7 @@ public class OpenSubtitlesHasher {
                         return String.format("%016x", size + head + tail);
                 } finally {
                         fileChannel.close();
+                        fis.close();
                 }
         }
         

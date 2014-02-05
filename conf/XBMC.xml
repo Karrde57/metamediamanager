@@ -12,7 +12,7 @@
 	<field name="fanart" markup="fanart" />		<!-- composed of thumb -->
 	<field name="lastplayed" markup="lastplayed" />
 	<field name="id" markup="id" />
-	<field name="type" markup="genre" />
+	<field name="genre" markup="genre" />
 	<field name="country" markup="country" />
 	<field name="credits" markup="credits" />
 	<field name="director" markup="director" />

@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,19 +11,22 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 
-import java.io.File;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Iterator;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+/**
+ * represents an episode
+ * @author jmey
+ *
+ */
 public class SeriesEpisode extends Media {
 	
 	private Series _series = null;
@@ -50,11 +53,11 @@ public class SeriesEpisode extends Media {
 	 * @param name
 	 * @param filename
 	 * @param seriesPath
-	 * @return
+	 * @return the SeriesEpisode or null if not found
 	 */
 	public static SeriesEpisode fromFilename(String name, String filename, String seriesPath)
 	{
-		Matcher matcher = Pattern.compile("^.*[sS]([0-9]+)\\.?[eE]([0-9]+)").matcher(name);
+		Matcher matcher = Pattern.compile(M3Config.getInstance().getParam("seriesRegex")).matcher(name);
 		if (matcher.find()) {
 			SeriesEpisode se = new SeriesEpisode(name, filename);
 			
@@ -76,6 +79,62 @@ public class SeriesEpisode extends Media {
 		
 		
 		return null;
+	}
+	
+	public static SeriesEpisode getBySeasonAndEpisodeNumber(int seriesId, int season, int episodeNumber)
+	{
+		Statement statement = DBManager.getInstance().getStatement();
+		ResultSet rs;
+		SeriesEpisode res = null;
+		try {
+			rs = statement.executeQuery("select * from medias where id_series="+seriesId+" and numseason="+season+" and numepisode="+episodeNumber);
+			if(rs.next()) //Media trouvé
+			{
+				res = new SeriesEpisode(rs);
+			}
+			
+		} catch (Exception e)
+		{
+			Logger.getInstance().write("Erreur accès database : " + e.getMessage());
+		}
+		finally {
+			try {
+				statement.close();
+			} catch (SQLException e) {
+			}
+		}
+				
+			    
+		return res;
+	}
+	
+	public static SeriesEpisode[] getAllBySeason(int seriesId, int season)
+	{
+		Statement statement = DBManager.getInstance().getStatement();
+		ResultSet rs;
+		List<SeriesEpisode> episodesList = new ArrayList<SeriesEpisode>();
+		try {
+			rs = statement.executeQuery("select * from medias where id_series="+seriesId+" and numseason="+season);
+			while(rs.next()) //Media trouvé
+			{
+				episodesList.add(new SeriesEpisode(rs));
+			}
+			
+		} catch (Exception e)
+		{
+			Logger.getInstance().write("Erreur accès database : " + e.getMessage());
+		}
+		finally {
+			try {
+				statement.close();
+			} catch (SQLException e) {
+			}
+		}
+				
+		SeriesEpisode[] res = new SeriesEpisode[episodesList.size()];
+		episodesList.toArray(res);
+		return res;
+		
 	}
 	
 	private SeriesEpisode(String name, String filename)

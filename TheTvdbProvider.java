@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
@@ -29,20 +29,21 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Scanner;
-import java.util.Set;
 import java.util.Vector;
 
 import org.jdom2.Document;
 import org.jdom2.Element;
 import org.jdom2.input.SAXBuilder;
-import org.json.JSONObject;
 
+
+/**
+ * Provider of the website TheTvDb for the series
+ * @author jmey
+ *
+ */
 public class TheTvdbProvider implements Provider {
 	
-	private String url;
 	private String charset;
-	private String query;
-	private JSONObject json;
 	private String apiKey;
 	
 	private FieldsConfig _seriesConfig = new FieldsConfig(getName()+"_series");
@@ -50,7 +51,6 @@ public class TheTvdbProvider implements Provider {
 	
 	public TheTvdbProvider ()
 	{
-		url = "";
 		apiKey = "B89CE93890E9419B";
 		charset = "UTF-8";
 	}
@@ -99,8 +99,12 @@ public class TheTvdbProvider implements Provider {
 	 * 		A String Object.
 	 */
 	private static String convertStreamToString(InputStream is) {
-	    Scanner s = new Scanner(is).useDelimiter("\\A");
-	    return s.hasNext() ? s.next() : "";
+	    Scanner s = new Scanner(is);
+	    Scanner s2 = s.useDelimiter("\\A");
+	    String res = s.hasNext() ? s.next() : "";
+	    s2.close();
+	    s.close();
+	    return res;
 	}
 	
 	
@@ -123,7 +127,9 @@ public class TheTvdbProvider implements Provider {
 	{
 		Document doc;
 		try {
-			doc = downloadXml("http://thetvdb.com/api/GetSeries.php?seriesname="+URLEncoder.encode(name, charset));
+			String url = "http://thetvdb.com/api/GetSeries.php?seriesname="+URLEncoder.encode(name, charset);
+			Logger.getInstance().write("TvDb : getSeriesRef : " + url);
+			doc = downloadXml(url);
 		} catch (UnsupportedEncodingException e) {
 			throw new ProviderException("charset non supporté");
 		}
@@ -177,8 +183,12 @@ public class TheTvdbProvider implements Provider {
 	
 	private MediaInfo getSeriesInfo(String seriesId, String language, boolean allImages) throws ProviderException
 	{
-		Document doc = downloadXml("http://thetvdb.com/api/"+apiKey+"/series/"+seriesId+"/"+language+".xml");
+		String url = "http://thetvdb.com/api/"+apiKey+"/series/"+seriesId+"/"+language+".xml";
+		
+		Document doc = downloadXml(url);
 
+		Logger.getInstance().write("TvDb : getSeriesInfo url : " + url);
+		
 		Element root = doc.getRootElement();
 		
 		
@@ -194,7 +204,11 @@ public class TheTvdbProvider implements Provider {
 	
 	private MediaInfo getEpisodeInfo(String seriesId, int season, int episode, String language, boolean allImages) throws ProviderException
 	{
-		Document doc = downloadXml("http://thetvdb.com/api/"+apiKey+"/series/"+seriesId+"/default/"+season+"/"+episode+"/"+language+".xml");
+		String url = "http://thetvdb.com/api/"+apiKey+"/series/"+seriesId+"/default/"+season+"/"+episode+"/"+language+".xml";
+			
+		Document doc = downloadXml(url);
+		
+		Logger.getInstance().write("TvDb Request : " + url);
 
 		Element root = doc.getRootElement();
 		
@@ -372,7 +386,7 @@ public class TheTvdbProvider implements Provider {
 		{
 			SeriesRef[] references = getSeriesRef(r.getSeriesName());
 			
-			if(references.length != 1)
+			if(references.length == 0 || (references.length > 1 && !references[0].name.trim().toLowerCase().equals(r.getSeriesName().trim().toLowerCase())))
 				return new ProviderResponse(); //not found
 			
 			String seriesId = references[0].id;

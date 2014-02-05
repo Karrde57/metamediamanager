@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager;
+*/package com.t3.metamediamanager;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -57,6 +57,19 @@ public class MediaLibrary {
         }
     }
     
+    private static boolean isVideoFile(File f)
+    {
+    	String filename = f.getAbsolutePath();
+    	String[] allExt = M3Config.getInstance().getParam("videoExt").split(" "); //Extensions given by the user
+
+    	for(String ext : allExt)
+    	{
+    		if(filename.endsWith(ext))
+    			return true;
+    	}
+    	return false;
+    }
+    
     /**
      * Search in the media directories every film or episode to add to the database
      */
@@ -72,14 +85,13 @@ public class MediaLibrary {
 		    for(File f : all)
 		    {
 		    	String filename = f.getPath();
-		    	if(filename.endsWith(".mkv") || filename.endsWith(".avi"))
+		    	if(isVideoFile(f))
 		    	{
 		    		Media media = Media.getByFilename(filename);
 		    		if(media==null)
 		    		{
 		    			String name = f.getName();
-		    			name = name.replaceAll(".mkv", "");
-		    			name = name.replaceAll(".avi", "");
+		    			name.substring(0, name.lastIndexOf('.'));
 
 		    			media=new Film(name,filename);
 		    			media.save();
@@ -96,14 +108,13 @@ public class MediaLibrary {
 		    for(File f : all)
 		    {
 		    	String filename = f.getPath();
-		    	if(filename.endsWith(".mkv") || filename.endsWith(".avi"))
+		    	if(isVideoFile(f))
 		    	{
 		    		Media media = Media.getByFilename(filename);
 		    		if(media==null)
 		    		{
 		    			String name = f.getName();
-		    			name = name.replaceAll(".mkv", "");
-		    			name = name.replaceAll(".avi", "");
+		    			name.substring(0, name.lastIndexOf('.'));
 		    			
 		    			String seriesPath = new File(fdir).toURI().relativize(new File(f.getAbsolutePath()).toURI()).getPath();
 		    			
@@ -122,6 +133,22 @@ public class MediaLibrary {
 		    	}
 		    }
     	}
+    	
+    	
+    	//We have added new movies
+    	//Now we have to check if some movies haven't been deleted
+    	
+    	Media[] medias = Media.getAll();
+    	
+    	for(Media media :medias)
+    	{
+    		File f = new File(media.getFilename());
+    		if(!f.exists() || (!Utility.isInADirectory(media.getFilename(), films) && !Utility.isInADirectory(media.getFilename(), series)))
+    		{
+    			media.delete();
+    		}
+    	}
+    	
     }
     
     

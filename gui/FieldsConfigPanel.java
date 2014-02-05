@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,7 +11,7 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager.gui;
+*/package com.t3.metamediamanager.gui;
 
 import java.awt.BorderLayout;
 import java.awt.FlowLayout;
@@ -39,12 +39,29 @@ import net.miginfocom.swing.MigLayout;
 import com.t3.metamediamanager.FieldsConfig;
 import com.t3.metamediamanager.Provider;
 import com.t3.metamediamanager.ProviderManager;
+import com.t3.metamediamanager.Saver;
+import com.t3.metamediamanager.SaverManager;
 
+/**
+ * Panel allowing the user to edit provider configuration. (XML files)
+ * @author vincent
+ *
+ */
 public class FieldsConfigPanel extends JPanel {
 	
-	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	//Model used for the table
 	private class MyModel extends DefaultTableModel
 	{
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
 		@Override
 		public boolean isCellEditable(int row, int column) {
 		   return (column == 1);
@@ -60,6 +77,10 @@ public class FieldsConfigPanel extends JPanel {
 			return false;
 		}
 		
+		/**
+		 * Returns a Map containing the table
+		 * @return
+		 */
 		public HashMap<String,String> getMap()
 		{
 			HashMap<String,String> res = new HashMap<String,String>();
@@ -90,7 +111,7 @@ public class FieldsConfigPanel extends JPanel {
 		add(panel, BorderLayout.NORTH);
 		panel.setLayout(new FlowLayout(FlowLayout.LEFT, 5, 5));
 		
-		JLabel lblNewLabel = new JLabel("Provider à configurer :");
+		JLabel lblNewLabel = new JLabel("Provider/Saver à configurer :");
 		panel.add(lblNewLabel);
 		
 		
@@ -105,6 +126,18 @@ public class FieldsConfigPanel extends JPanel {
 			for(String conf : p.getConfigFiles())
 				namesVec.add(conf);
 		}
+		
+		//We do the same for the savers. Note : a saver config file may be already loaded by a provider (ex XBMC Provider/saver)
+		Vector<Saver> saversList = SaverManager.getInstance().getSavers();
+		for(Saver s : saversList)
+		{
+			for(String conf : s.getConfigFiles())
+			{
+				if(!namesVec.contains(conf))
+					namesVec.add(conf);
+			}
+		}
+
 		
 		String[] namesTab = new String[namesVec.size()];
 		namesVec.toArray(namesTab);
@@ -134,6 +167,7 @@ public class FieldsConfigPanel extends JPanel {
 		btnDelete.setToolTipText("Supprimer ce champ");
 		btnDelete.setIcon(new ImageIcon(FieldsConfig.class.getResource("/com/t3/metamediamanager/gui/icons/Trash.png")));
 
+		//Delete a line
 		btnDelete.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 				int selectedRow = _fieldsTable.getSelectedRow();
@@ -154,6 +188,7 @@ public class FieldsConfigPanel extends JPanel {
 		btnNewField.setToolTipText("Nouveau champ");
 		btnNewField.setIcon(new ImageIcon(FieldsConfig.class.getResource("/com/t3/metamediamanager/gui/icons/Plus.png")));
 
+		//New line
 		btnNewField.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 			    String info = JOptionPane.showInputDialog(null, "Nom interne du champ :", "Options", JOptionPane.QUESTION_MESSAGE);
@@ -190,7 +225,7 @@ public class FieldsConfigPanel extends JPanel {
 	{
 		_currentConfig = providerName;
 		
-		//If we already loaded this provider config
+		//If we have already loaded this provider config
 		if(_models.containsKey(providerName))
 		{
 			_fieldsTable.setModel(getCurrentModel());

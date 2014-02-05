@@ -1,4 +1,4 @@
-Copyright 2014  M3Team
+/*Copyright 2014  M3Team
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -11,96 +11,114 @@ distributed under the License is distributed on an "AS IS" BASIS,
 WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
-package com.t3.metamediamanager.gui;
+*/package com.t3.metamediamanager.gui;
 
-import javax.swing.JPanel;
-import net.miginfocom.swing.MigLayout;
+import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.util.Vector;
 
+import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JPanel;
 import javax.swing.JTextField;
-import javax.swing.JButton;
+import javax.swing.border.EmptyBorder;
+import javax.swing.border.TitledBorder;
 
 import com.t3.metamediamanager.Media;
+import com.t3.metamediamanager.MediaFilter;
 import com.t3.metamediamanager.MediaRenamer;
 
-import java.awt.event.ActionListener;
-import java.awt.event.ActionEvent;
-import java.util.Arrays;
-
-import javax.swing.JTextPane;
 
 
+
+/**
+ * JFrame use to rename a films and series
+ * @author jmey
+ *
+ */
 public class Renamer extends JFrame
 {
-	private JTextField textField;
-	private JTextField textField_1;
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	public Renamer() {
-		getContentPane().setLayout(new MigLayout("", "[23.00][162.00,grow][83.00][52.00][293.00]", "[30.00,center][30.00,top][30.00,top][30.00,top][30.00][30.00,grow,fill][30.00,center][30.00,bottom][30.00,bottom][30.00,bottom]"));
+		getContentPane().setLayout(new BorderLayout(5, 5));
 		
-		JLabel lblFilm = new JLabel("FILM");
-		getContentPane().add(lblFilm, "cell 1 0");
-		
-		JLabel lblOptionsDeRenommage = new JLabel("Options de renommage : ");
-		getContentPane().add(lblOptionsDeRenommage, "cell 1 1");
-		
-		JLabel lblPourLesFilms = new JLabel("Pour les films et épisodes : ");
-		getContentPane().add(lblPourLesFilms, "cell 4 1,aligny center");
-		
-		textField = new JTextField();
-		getContentPane().add(textField, "cell 1 2,growx");
-		textField.setColumns(10);
-		
-		JButton btnRenommer = new JButton("Renommer");
-		btnRenommer.addActionListener(new ActionListener()
+		JPanel filmEpisode = new JPanel(new BorderLayout(5,5));
+		JPanel film = new JPanel(new BorderLayout(2,2));
+		film.setBorder(new TitledBorder("<html> <b>Film </b> </html>"));
+		JPanel episode = new JPanel(new BorderLayout(2,2));
+		JPanel episode2 = new JPanel(new BorderLayout(2,2));
+		episode.setBorder(new TitledBorder("<html> <b>Episode </b> </html>"));
+		JLabel structfilm_label = new JLabel("Structure :");
+		JLabel structep_label = new JLabel("Structure :");
+		final JTextField film_textfield = new JTextField(20);
+		final JTextField ep_textfield = new JTextField(20);
+		JButton film_button = new JButton("Renommer");
+		film_button.addActionListener(new ActionListener()
 		{
 			public void actionPerformed(ActionEvent e)
 			{
-				Media[] medias = Media.getAll();
-				MediaRenamer.rename(medias, textField.getText(), "film");
+				MediaFilter mf = new MediaFilter(MediaFilter.Type.FILMS);
+				Vector<Media> mediasv = Media.searchByName("", mf);
+				Object[] mediaso = mediasv.toArray();
+				Media[] medias = new Media[mediaso.length];
+				for(int i=0;i<mediaso.length;i++)
+				{
+					medias[i] = (Media) mediaso[i];
+				}
+				MediaRenamer.rename(medias, film_textfield.getText(), "film");
+				setVisible(false);
+				dispose();
 			}
 		}
 		);
-		
-		JLabel lbltTitre = new JLabel("%t : titre");
-		getContentPane().add(lbltTitre, "cell 4 2");
-		getContentPane().add(btnRenommer, "cell 2 3");
-		
-		JLabel lbltoTitre = new JLabel("%o : titre original");
-		getContentPane().add(lbltoTitre, "cell 4 3");
-		
-		JLabel lblaDate = new JLabel("%a : date ou année de sortie");
-		getContentPane().add(lblaDate, "cell 4 4");
-		
-		JLabel lblEpisode = new JLabel("EPISODE");
-		getContentPane().add(lblEpisode, "cell 1 6");
-		
-		JLabel lblOptionsDeRenommage_1 = new JLabel("Options de renommage :");
-		getContentPane().add(lblOptionsDeRenommage_1, "cell 1 7");
-		
-		JLabel lblUniquementPourLes = new JLabel("Uniquement pour les épisodes : ");
-		getContentPane().add(lblUniquementPourLes, "cell 4 7");
-		
-		textField_1 = new JTextField();
-		getContentPane().add(textField_1, "cell 1 8,growx");
-		textField_1.setColumns(10);
-		
-		JButton btnRenommer_1 = new JButton("Renommer");
-		btnRenommer_1.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent e) {
-				Media[] medias = Media.getAll();
-				System.out.println(Arrays.toString(medias));
-				MediaRenamer.rename(medias, textField_1.getText(), "episode");
+		JButton ep_button = new JButton("Renommer");
+		ep_button.addActionListener(new ActionListener()
+		{
+			public void actionPerformed(ActionEvent e)
+			{
+				MediaFilter mf = new MediaFilter(MediaFilter.Type.EPISODES);
+				Vector<Media> mediasv = Media.searchByName("", mf);
+				Object[] mediaso = mediasv.toArray();
+				Media[] medias = new Media[mediaso.length];
+				for(int i=0;i<mediaso.length;i++)
+				{
+					medias[i] = (Media) mediaso[i];
+				}
+				MediaRenamer.rename(medias, ep_textfield.getText(), "episode");
+				setVisible(false);
+				dispose();
 			}
-		});
+		}
+		);
+		JPanel explanations = new JPanel(new BorderLayout(5,5));
+		JLabel explain_label = new JLabel("<html> <b> Mots-clés </b><br /><br />" +
+				"%t = Titre<br />" +
+				"%o = Titre Original<br /> " +
+				"%a = Date de sortie<br /> " +
+				"%s = Numéro de la saison <br />" + 
+				"%e = Numéro de l'épisode <br /></html/>");
+		explain_label.setBorder(new EmptyBorder(10, 10, 10, 10));
 		
-		JLabel lblsNumro = new JLabel("%s : numéro de saison");
-		getContentPane().add(lblsNumro, "cell 4 8");
-		getContentPane().add(btnRenommer_1, "cell 2 9");
+		film.add(structfilm_label, BorderLayout.WEST);
+		film.add(film_textfield, BorderLayout.CENTER);
+		film.add(film_button,  BorderLayout.EAST);
+		episode.add(structep_label, BorderLayout.WEST);
+		episode.add(ep_textfield, BorderLayout.CENTER);
+		episode.add(ep_button, BorderLayout.EAST);
+		explanations.add(explain_label, BorderLayout.NORTH);
+		episode2.add(episode, BorderLayout.NORTH);
+		filmEpisode.add(film, BorderLayout.NORTH);
+		filmEpisode.add(episode2, BorderLayout.CENTER);
+		getContentPane().add(filmEpisode, BorderLayout.CENTER);
+		getContentPane().add(explanations, BorderLayout.EAST);
 		
-		JLabel lbleUmro = new JLabel("%e : numéro de l'épisode");
-		getContentPane().add(lbleUmro, "cell 4 9");
+		
 	}
-
-
 }
