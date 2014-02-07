@@ -1,0 +1,32 @@
+<Saver>
+	<field name="adult" markup="adult" />
+	<field name="budget" markup="budget" />
+	<field name="type" markup="genres" />
+	<field name="originaltitle" markup="originaltitle" />
+	<field name="synopsis" markup="Overview" />
+	<field name="adult" markup="adult" />
+	<field name="studio" markup="productions_companies" />
+	<field name="country" markup="production_country" />
+	<field name="date" markup="year" />
+	<field name="catchphrase" markup="tagline" />
+	<field name="language" markup="spoken_languages" />
+	<field name="rating" markup="vote_average" />
+	<field name="nbvotes" markup="vote_count" />
+	<field name="director" markup="crew" />
+	<field name="day" markup="Airs_DayOfWeek" />
+	<field name="hour" markup="Airs_Time" />
+	<field name="date" markup="FirstAired" />
+	<field name="genre" markup="Genre" />
+	<field name="language" markup="Language" />
+	<field name="channels" markup="Network" />
+	<field name="rating" markup="Rating" />
+	<field name="nbvotes" markup="ratingcount" />
+	<field name="originaltitle" markup="SeriesName" />
+	<field name="statut" markup="Status" />
+	<field name="episode" markup="EpisodeNumber" />
+	<field name="originaltitle" markup="EpisodeName" />
+	<field name="date" markup="FirstAired" />
+	<field name="director" markup="Director" />
+	<field name="season" markup="SeasonNumber" />
+	<field name="rating" markup="Rating" />
+</Saver>
