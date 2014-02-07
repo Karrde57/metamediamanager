@@ -1,0 +1,15 @@
+<config>
+  <param name="videoExt" value=".avi .mp4 .mkv" />
+  <param name="videoplayer" value="vlc" />
+  <param name="language" value="en" />
+  <param name="seriesRegex" value="([0-9]+)\.?[eExX]([0-9]+)" />
+  <enabledSaver>XBMC</enabledSaver>
+  <enabledSaver>MediaBrowser</enabledSaver>
+  <enabledProvider>omdb</enabledProvider>
+  <enabledProvider>XBMC</enabledProvider>
+  <enabledProvider>theMovieDB</enabledProvider>
+  <enabledProvider>opensubtitles</enabledProvider>
+  <enabledProvider>thetvdb</enabledProvider>
+  <enabledProvider>allocine</enabledProvider>
+  <enabledProvider>MediaBrowser</enabledProvider>
+</config>
