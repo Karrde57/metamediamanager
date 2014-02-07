@@ -1,8 +1,0 @@
-<provider>
-<field name="writer" markup="Writer" />
-<field name="synopsis" markup="Overview" />
-<field name="director" markup="Director" />
-<field name="img_poster" markup="filename" />
-<field name="rating" markup="Rating" />
-<field name="title" markup="EpisodeName" />
-</provider>
